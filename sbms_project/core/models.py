@@ -10,6 +10,12 @@ class User(models.Model):
     email = models.EmailField(unique=True, null=True, blank=True)
     password = models.CharField(max_length=128, null=True, blank=True)  # Added for manual auth
     phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    ROLE_CHOICES = (
+        ('Citizen', 'Citizen'),
+        ('Staff', 'Staff'),
+        ('Admin', 'Admin'),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Citizen')
     aadhaar_no = models.CharField(max_length=500, unique=True)
     address = models.TextField()
     state = models.CharField(max_length=100)

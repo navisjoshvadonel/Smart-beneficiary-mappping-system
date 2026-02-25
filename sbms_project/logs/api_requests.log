@@ -1,0 +1,13 @@
+INFO 2026-02-25 22:12:19,465 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.069s | Payload: 
+INFO 2026-02-25 22:12:19,509 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.040s | Payload: 
+INFO 2026-02-25 22:12:20,810 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.022s | Payload: 
+INFO 2026-02-25 22:12:20,827 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.013s | Payload: 
+INFO 2026-02-25 22:12:22,039 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.009s | Payload: 
+INFO 2026-02-25 22:12:22,075 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.030s | Payload: 
+INFO 2026-02-25 22:12:23,301 Method: GET | Path: /api/citizen/profile/3/ | Status: 200 | Execution Time: 0.007s | Payload: 
+INFO 2026-02-25 22:12:23,336 Method: GET | Path: /api/citizen/profile/3/ | Status: 200 | Execution Time: 0.028s | Payload: 
+INFO 2026-02-25 22:12:24,224 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.000s | Payload: 
+INFO 2026-02-25 22:12:24,234 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.001s | Payload: 
+INFO 2026-02-25 22:12:33,068 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.060s | Payload: 
+INFO 2026-02-25 22:12:33,154 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.080s | Payload: 
+INFO 2026-02-25 22:12:47,449 Method: POST | Path: /api/ai/chat/ | Status: 200 | Execution Time: 3.573s | Payload: {"message":"hii"}

@@ -9,6 +9,11 @@ from core.services.eligibility_service import EligibilityService
 from core.services.nlp_scheme_finder import NLPSchemeFinderService
 from core.services.analytics_engine import AdminAnalyticsEngine
 
+def is_admin(request):
+    user_id = request.headers.get('X-User-ID')
+    if not user_id: return False
+    return User.objects.filter(user_id=user_id, role='Admin').exists()
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def update_profile(request):
@@ -99,6 +104,9 @@ def voice_query(request):
 
 @require_http_methods(["GET"])
 def admin_metrics(request):
+    if not is_admin(request):
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized. Admin access required.'}, status=403)
+        
     try:
         metrics = AdminAnalyticsEngine.compute_metrics()
         

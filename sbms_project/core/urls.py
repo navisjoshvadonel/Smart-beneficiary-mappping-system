@@ -3,6 +3,7 @@ from . import views
 from . import views_auth
 from . import views_citizen
 from . import views_ai
+from . import views_admin
 
 urlpatterns = [
     path('profile/update/', views.update_profile, name='update_profile'),
@@ -10,6 +11,12 @@ urlpatterns = [
     path('admin/metrics/', views.admin_metrics, name='admin_metrics'),
     path('admin/grievances/', views.admin_grievances, name='admin_grievances'),
     path('admin/grievances/<int:grievance_id>/resolve/', views.resolve_grievance, name='resolve_grievance'),
+    
+    # New Admin API Endpoints
+    path('admin/schemes/create/', views_admin.create_scheme, name='create_scheme'),
+    path('admin/schemes/<int:scheme_id>/update/', views_admin.update_scheme, name='update_scheme'),
+    path('admin/schemes/<int:scheme_id>/delete/', views_admin.delete_scheme, name='delete_scheme'),
+
     path('ai/chat/', views_ai.chat_with_gemini, name='chat_with_gemini'),
     
     # Auth Endpoints

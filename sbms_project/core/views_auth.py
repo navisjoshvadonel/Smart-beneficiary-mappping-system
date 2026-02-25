@@ -1,9 +1,14 @@
 import json
+import re
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password, check_password
 from core.models import User
 import uuid
+
+def is_valid_email(email):
+    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    return re.match(pattern, email) is not None
 
 @csrf_exempt
 def register_user(request):
@@ -12,12 +17,15 @@ def register_user(request):
     
     try:
         data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
-        full_name = data.get('full_name', 'Citizen')
+        email = str(data.get('email', '')).strip()
+        password = str(data.get('password', '')).strip()
+        full_name = str(data.get('full_name', 'Citizen')).strip()
         
         if not email or not password:
             return JsonResponse({'status': 'error', 'message': 'Email and passwords are required'}, status=400)
+            
+        if not is_valid_email(email):
+            return JsonResponse({'status': 'error', 'message': 'Invalid email format'}, status=400)
             
         # Check if user exists
         if User.objects.filter(email=email).exists():
@@ -37,7 +45,8 @@ def register_user(request):
             district='Chennai',
             income=0,
             occupation='Unemployed',
-            education='None'
+            education='None',
+            role='Citizen'
         )
         
         return JsonResponse({
@@ -46,7 +55,8 @@ def register_user(request):
             'user': {
                 'id': user.user_id,
                 'email': user.email,
-                'full_name': user.full_name
+                'full_name': user.full_name,
+                'role': user.role
             }
         })
     except Exception as e:
@@ -59,11 +69,14 @@ def login_user(request):
         
     try:
         data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
+        email = str(data.get('email', '')).strip()
+        password = str(data.get('password', '')).strip()
         
         if not email or not password:
             return JsonResponse({'status': 'error', 'message': 'Email and passwords are required'}, status=400)
+            
+        if not is_valid_email(email):
+            return JsonResponse({'status': 'error', 'message': 'Invalid email format'}, status=400)
             
         user = User.objects.filter(email=email).first()
         if not user or not check_password(password, user.password):
@@ -75,7 +88,8 @@ def login_user(request):
             'user': {
                 'id': user.user_id,
                 'email': user.email,
-                'full_name': user.full_name
+                'full_name': user.full_name,
+                'role': user.role
             }
         })
     except Exception as e:
@@ -88,11 +102,14 @@ def google_auth(request):
         
     try:
         data = json.loads(request.body)
-        email = data.get('email')
-        full_name = data.get('name', 'Citizen')
+        email = str(data.get('email', '')).strip()
+        full_name = str(data.get('name', 'Citizen')).strip()
         
         if not email:
             return JsonResponse({'status': 'error', 'message': 'Email from Google payload required'}, status=400)
+            
+        if not is_valid_email(email):
+            return JsonResponse({'status': 'error', 'message': 'Invalid email format'}, status=400)
             
         user = User.objects.filter(email=email).first()
         
@@ -109,7 +126,8 @@ def google_auth(request):
                 district='Chennai',
                 income=0,
                 occupation='Unemployed',
-                education='None'
+                education='None',
+                role='Citizen'
             )
             
         return JsonResponse({
@@ -118,7 +136,8 @@ def google_auth(request):
             'user': {
                 'id': user.user_id,
                 'email': user.email,
-                'full_name': user.full_name
+                'full_name': user.full_name,
+                'role': user.role
             }
         })
     except Exception as e:

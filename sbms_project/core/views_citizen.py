@@ -82,10 +82,18 @@ def citizen_applications(request, user_id):
         try:
             body = json.loads(request.body)
             scheme_id = body.get('scheme_id')
-            scheme = Scheme.objects.filter(scheme_id=scheme_id).first()
-            if not scheme:
-                return JsonResponse({'status': 'error', 'message': 'Scheme not found'}, status=400)
             
+            if not scheme_id or not str(scheme_id).isdigit():
+                return JsonResponse({'status': 'error', 'message': 'Valid Scheme ID is required'}, status=400)
+                
+            scheme = Scheme.objects.filter(scheme_id=int(scheme_id)).first()
+            if not scheme:
+                return JsonResponse({'status': 'error', 'message': 'Scheme not found'}, status=404)
+            
+            # Check if user already applied
+            if Application.objects.filter(user=user, scheme=scheme).exists():
+                return JsonResponse({'status': 'error', 'message': 'Application already exists for this scheme'}, status=409)
+                
             Application.objects.create(user=user, scheme=scheme, status='Pending')
             return JsonResponse({'status': 'success', 'message': 'Application submitted successfully'})
         except Exception as e:
