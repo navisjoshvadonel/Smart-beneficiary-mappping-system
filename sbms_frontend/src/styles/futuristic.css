@@ -1,0 +1,46 @@
+/* futuristic.css */
+
+/* Enhancing existing glass-card from index.css gracefully */
+.glass-card {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.dark .glass-card {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2) !important;
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.4) !important;
+}
+
+/* Button enhancements */
+button {
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Input fields */
+input:focus,
+textarea:focus,
+select:focus {
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+    border-color: rgba(0, 255, 255, 0.5) !important;
+    transition: all 0.3s ease;
+}
+
+.input-float-wrapper {
+    position: relative;
+}
+
+.input-float-wrapper input:focus+label,
+.input-float-wrapper input:not(:placeholder-shown)+label {
+    transform: translateY(-120%) scale(0.8);
+    color: rgba(0, 255, 255, 0.8);
+}

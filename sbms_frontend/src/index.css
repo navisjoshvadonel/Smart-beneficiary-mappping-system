@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #F4F7FE;
+    --bg-card: rgba(255, 255, 255, 0.65);
+    --accent-gradient: linear-gradient(135deg, #00F0FF, #6A00FF);
+    --text-primary: #0B132B;
+    --text-muted: #4A5568;
+  }
+
+  :root.dark {
+    --bg-primary: #0A0F1C;
+    --bg-card: rgba(20, 25, 45, 0.55);
+    --accent-gradient: linear-gradient(135deg, #00FFB2, #8A2BE2);
+    --text-primary: #E5E9F0;
+    --text-muted: #A0AEC0;
+  }
+
+  body {
+    @apply bg-background text-text transition-colors duration-500 min-h-screen font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-card backdrop-blur-[20px] saturate-[180%] border border-white/10 shadow-lg rounded-2xl;
+  }
+  
+  .glass-panel {
+    @apply bg-card backdrop-blur-[20px] saturate-[180%] border border-white/10 shadow-md;
+  }
+
+  /* Ambient animations */
+  .glow-ring {
+    position: relative;
+  }
+  .glow-ring::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: var(--accent-gradient);
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .glow-ring:hover::before, .glow-ring:focus-within::before {
+    opacity: 1;
+  }
+}
