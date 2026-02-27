@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Grid, FileText, AlertCircle, RefreshCw, Search, ArrowRight, User } from 'lucide-react';
+import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 import { CitizenService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -342,6 +343,40 @@ export const UserDashboard = () => {
                                 ))
                             )}
                         </div>
+                    </div>
+
+                    {/* Profile Strength Snippet */}
+                    <div className="glass-card p-5 border border-white/10 relative overflow-hidden group">
+                        <div className="flex items-center justify-between mb-2 relative z-10">
+                            <div className="flex items-center space-x-2">
+                                <User className="w-4 h-4 text-emerald-400" />
+                                <h3 className="font-bold text-text">Profile Strength</h3>
+                            </div>
+                        </div>
+                        <div className="h-40 w-full relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadialBarChart
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius="70%"
+                                    outerRadius="90%"
+                                    barSize={12}
+                                    data={[{ name: 'Profile', value: 85, fill: '#10b981' }]}
+                                    startAngle={225}
+                                    endAngle={-45}
+                                >
+                                    <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                                    <RadialBar background={{ fill: 'rgba(255,255,255,0.05)' }} dataKey="value" cornerRadius={6} />
+                                </RadialBarChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span className="text-3xl font-bold text-text">85%</span>
+                                <span className="text-[10px] text-textMuted uppercase tracking-wider">Complete</span>
+                            </div>
+                        </div>
+                        <p className="text-xs text-textMuted text-center mt-2">
+                            Add income certificates to unlock 12 more schemes.
+                        </p>
                     </div>
 
                     {/* Past Searches Snippet */}

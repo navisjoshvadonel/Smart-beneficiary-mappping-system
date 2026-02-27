@@ -11,7 +11,21 @@ import { MyApplications } from './pages/MyApplications'
 import { MyGrievances } from './pages/MyGrievances'
 import { SchemeSearch } from './pages/SchemeSearch'
 import { UserProfile } from './pages/UserProfile'
+import { LandingPage } from './pages/LandingPage'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { Navigate } from 'react-router-dom'
+
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
+  const storedUser = localStorage.getItem('sbms_user');
+  if (!storedUser) return <Navigate to="/auth" />;
+
+  const user = JSON.parse(storedUser);
+  if (requireAdmin && user.role !== 'Admin') {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return children;
+};
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE";
 
@@ -21,41 +35,56 @@ function App() {
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<AuthPage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={
-              <DashboardLayout>
-                <UserDashboard />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <UserDashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             <Route path="/applications" element={
-              <DashboardLayout>
-                <MyApplications />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyApplications />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             <Route path="/search" element={
-              <DashboardLayout>
-                <SchemeSearch />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <SchemeSearch />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             <Route path="/profile" element={
-              <DashboardLayout>
-                <UserProfile />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <UserProfile />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             <Route path="/grievances" element={
-              <DashboardLayout>
-                <MyGrievances />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyGrievances />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             <Route path="/analytics" element={
-              <DashboardLayout>
-                <AdminDashboard />
-              </DashboardLayout>
+              <ProtectedRoute requireAdmin={true}>
+                <DashboardLayout>
+                  <AdminDashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             <Route path="/admin-grievances" element={
-              <DashboardLayout>
-                <AdminGrievances />
-              </DashboardLayout>
+              <ProtectedRoute requireAdmin={true}>
+                <DashboardLayout>
+                  <AdminGrievances />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
             {/* Fallback routes for demo */}
             <Route path="*" element={

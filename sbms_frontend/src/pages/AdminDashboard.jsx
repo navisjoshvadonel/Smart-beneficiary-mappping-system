@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, ShieldAlert, Cpu, Users, BarChart } from 'lucide-react';
+import { Activity, ShieldAlert, Cpu, Users, BarChart as BarChartIcon, Settings, Power, Zap, Terminal } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { AdminAnalyticsSyncService } from '../services/api';
 
 const defaultKPIs = [
@@ -28,12 +29,14 @@ export const AdminDashboard = () => {
                     ]);
 
                     const schemeHMap = data['Welfare Heatmap'] || [];
-                    const formattedAllocations = schemeHMap.slice(0, 3).map((item, idx) => ({
-                        name: item.scheme__scheme_name || 'Scheme',
-                        val: item.count || 0,
-                        color: idx === 0 ? 'bg-indigo-500' : idx === 1 ? 'bg-teal-500' : 'bg-purple-500',
-                        text_color: idx === 0 ? 'text-indigo-400' : idx === 1 ? 'text-teal-400' : 'text-purple-400'
-                    }));
+                    const formattedAllocations = schemeHMap.slice(0, 5).map((item, idx) => {
+                        const colors = ['#8b5cf6', '#14b8a6', '#f43f5e', '#f59e0b', '#3b82f6'];
+                        return {
+                            name: item.scheme__scheme_name || 'Scheme',
+                            val: item.count || 0,
+                            fill: colors[idx % colors.length]
+                        };
+                    });
                     setAllocations(formattedAllocations);
                 }
             } catch (err) {
@@ -124,23 +127,31 @@ export const AdminDashboard = () => {
                     className="lg:col-span-2 glass-card p-6 border border-white/10"
                 >
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-text">Welfare Allocation Heat Map</h3>
-                        <BarChart className="w-5 h-5 text-textMuted" />
+                        <h3 className="text-lg font-bold text-text">Welfare Allocation Distribution</h3>
+                        <BarChartIcon className="w-5 h-5 text-textMuted" />
                     </div>
 
-                    <div className="space-y-6">
-                        {allocations.length > 0 ? allocations.map((alloc, i) => (
-                            <div key={i}>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="text-textMuted font-mono truncate max-w-[70%]">{alloc.name}</span>
-                                    <span className={`${alloc.text_color} font-bold`}>{alloc.val} Units</span>
-                                </div>
-                                <div className="w-full h-3 bg-card rounded-full overflow-hidden border border-white/5">
-                                    <motion.div initial={{ width: 0 }} animate={{ width: `100%` }} transition={{ duration: 1.5, delay: 0.5 + (i * 0.1) }} className={`h-full ${alloc.color}`} />
-                                </div>
+                    <div className="h-[300px] w-full">
+                        {allocations.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={allocations} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" width={150} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                        contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-primary)' }}
+                                    />
+                                    <Bar dataKey="val" radius={[0, 4, 4, 0]}>
+                                        {allocations.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex items-center justify-center">
+                                <p className="text-textMuted italic">Awaiting pipeline sync...</p>
                             </div>
-                        )) : (
-                            <p className="text-textMuted italic">Awaiting pipeline sync...</p>
                         )}
                     </div>
                 </motion.div>
@@ -182,6 +193,71 @@ export const AdminDashboard = () => {
                     </p>
                 </motion.div>
             </div>
+
+            {/* System Controls Section */}
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="glass-card p-8 border border-white/10"
+            >
+                <div className="flex items-center space-x-3 mb-8">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                        <Settings className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-text">System Controller</h3>
+                        <p className="text-textMuted text-sm">Real-time administrative overrides and subsystem management</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <Zap className="w-5 h-5 text-yellow-400" />
+                                <span className="font-bold text-text">AI Fraud Detection</span>
+                            </div>
+                            <div className="w-12 h-6 rounded-full bg-green-500/20 border border-green-500/40 relative cursor-pointer group">
+                                <div className="absolute right-1 top-1 w-4 h-4 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)]" />
+                            </div>
+                        </div>
+                        <p className="text-xs text-textMuted leading-relaxed">
+                            Neural engine monitoring incoming applications for pattern anomalies and duplicate identities.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <Power className="w-5 h-5 text-red-400" />
+                                <span className="font-bold text-text">Maintenance Mode</span>
+                            </div>
+                            <div className="w-12 h-6 rounded-full bg-white/5 border border-white/10 relative cursor-pointer">
+                                <div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-white/20" />
+                            </div>
+                        </div>
+                        <p className="text-xs text-textMuted leading-relaxed">
+                            Restrict public access to the citizen portal while performing core database migrations.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center space-x-3 mb-2">
+                            <Terminal className="w-5 h-5 text-indigo-400" />
+                            <span className="font-bold text-text">Quick Actions</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs font-bold text-text">
+                                PURGE CACHE
+                            </button>
+                            <button className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs font-bold text-text">
+                                SYNC NODES
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
 
         </div>
     );

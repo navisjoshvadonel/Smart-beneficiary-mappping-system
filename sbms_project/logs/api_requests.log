@@ -11,3 +11,90 @@ INFO 2026-02-25 22:12:24,234 Method: GET | Path: /api/admin/metrics/ | Status: 4
 INFO 2026-02-25 22:12:33,068 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.060s | Payload: 
 INFO 2026-02-25 22:12:33,154 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.080s | Payload: 
 INFO 2026-02-25 22:12:47,449 Method: POST | Path: /api/ai/chat/ | Status: 200 | Execution Time: 3.573s | Payload: {"message":"hii"}
+INFO 2026-02-25 22:18:28,584 Method: POST | Path: /api/auth/login/ | Status: 200 | Execution Time: 1.126s | Payload: (hidden)
+INFO 2026-02-25 22:18:28,736 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.058s | Payload: 
+INFO 2026-02-25 22:18:28,820 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.077s | Payload: 
+INFO 2026-02-25 22:18:32,904 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.036s | Payload: 
+INFO 2026-02-25 22:18:32,944 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.034s | Payload: 
+INFO 2026-02-25 22:18:38,316 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.020s | Payload: 
+INFO 2026-02-25 22:20:50,527 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.035s | Payload: 
+INFO 2026-02-25 22:20:50,567 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.039s | Payload: 
+INFO 2026-02-25 22:20:51,414 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.007s | Payload: 
+INFO 2026-02-25 22:20:51,426 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.007s | Payload: 
+INFO 2026-02-25 22:20:53,270 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.084s | Payload: 
+INFO 2026-02-25 22:20:53,331 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.053s | Payload: 
+INFO 2026-02-25 22:33:53,112 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.111s | Payload: 
+INFO 2026-02-25 22:33:53,208 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.081s | Payload: 
+INFO 2026-02-25 22:33:55,473 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.025s | Payload: 
+INFO 2026-02-25 22:33:55,508 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.030s | Payload: 
+INFO 2026-02-25 22:34:00,789 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.106s | Payload: 
+INFO 2026-02-25 22:34:00,854 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.060s | Payload: 
+INFO 2026-02-25 22:34:13,798 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.036s | Payload: 
+INFO 2026-02-25 22:34:13,827 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.022s | Payload: 
+INFO 2026-02-25 22:34:14,945 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.028s | Payload: 
+INFO 2026-02-25 22:34:14,969 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.019s | Payload: 
+INFO 2026-02-25 22:34:22,149 Method: POST | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.061s | Payload: {"complaint":"hhhh"}
+INFO 2026-02-25 22:34:22,190 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.026s | Payload: 
+INFO 2026-02-25 22:34:26,926 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.019s | Payload: 
+INFO 2026-02-25 22:34:26,954 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.019s | Payload: 
+INFO 2026-02-25 22:37:28,474 Method: POST | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.057s | Payload: {"scheme_id":2}
+INFO 2026-02-25 22:37:28,649 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.068s | Payload: 
+INFO 2026-02-25 22:37:28,727 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.070s | Payload: 
+INFO 2026-02-25 22:44:50,617 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.104s | Payload: 
+INFO 2026-02-25 22:44:50,719 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.092s | Payload: 
+INFO 2026-02-25 22:45:10,960 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.096s | Payload: 
+INFO 2026-02-25 22:45:11,044 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.075s | Payload: 
+INFO 2026-02-25 22:48:11,251 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.054s | Payload: 
+INFO 2026-02-25 22:48:11,368 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.106s | Payload: 
+INFO 2026-02-26 23:53:07,104 Method: POST | Path: /api/auth/login/ | Status: 401 | Execution Time: 1.267s | Payload: (hidden)
+INFO 2026-02-26 23:53:14,405 Method: POST | Path: /api/auth/login/ | Status: 200 | Execution Time: 1.642s | Payload: (hidden)
+INFO 2026-02-26 23:53:14,712 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.200s | Payload: 
+INFO 2026-02-26 23:53:14,761 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.044s | Payload: 
+INFO 2026-02-26 23:54:08,136 Method: GET | Path: /api/admin/grievances/ | Status: 200 | Execution Time: 0.034s | Payload: 
+INFO 2026-02-26 23:54:08,185 Method: GET | Path: /api/admin/grievances/ | Status: 200 | Execution Time: 0.036s | Payload: 
+INFO 2026-02-26 23:54:09,253 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.000s | Payload: 
+INFO 2026-02-26 23:54:09,261 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.001s | Payload: 
+INFO 2026-02-26 23:54:10,351 Method: GET | Path: /api/admin/grievances/ | Status: 200 | Execution Time: 0.033s | Payload: 
+INFO 2026-02-26 23:54:10,385 Method: GET | Path: /api/admin/grievances/ | Status: 200 | Execution Time: 0.032s | Payload: 
+INFO 2026-02-26 23:54:12,563 Method: POST | Path: /api/admin/grievances/1/resolve/ | Status: 200 | Execution Time: 0.034s | Payload: 
+INFO 2026-02-26 23:54:14,801 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.000s | Payload: 
+INFO 2026-02-26 23:54:14,814 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.001s | Payload: 
+INFO 2026-02-26 23:54:17,213 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.099s | Payload: 
+INFO 2026-02-26 23:54:17,329 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.101s | Payload: 
+INFO 2026-02-26 23:54:18,521 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.035s | Payload: 
+INFO 2026-02-26 23:54:18,568 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.038s | Payload: 
+INFO 2026-02-26 23:54:20,213 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.063s | Payload: 
+INFO 2026-02-26 23:54:20,258 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.045s | Payload: 
+INFO 2026-02-26 23:54:22,771 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.042s | Payload: 
+INFO 2026-02-26 23:54:22,813 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.034s | Payload: 
+INFO 2026-02-26 23:54:30,415 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.102s | Payload: 
+INFO 2026-02-26 23:54:30,523 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.099s | Payload: 
+INFO 2026-02-27 00:08:44,128 Method: POST | Path: /api/auth/login/ | Status: 200 | Execution Time: 2.389s | Payload: (hidden)
+INFO 2026-02-27 00:08:44,596 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.076s | Payload: 
+INFO 2026-02-27 00:08:44,678 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.074s | Payload: 
+INFO 2026-02-27 00:08:48,819 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.034s | Payload: 
+INFO 2026-02-27 00:08:48,868 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.036s | Payload: 
+INFO 2026-02-27 00:11:32,662 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.017s | Payload: 
+INFO 2026-02-27 00:11:32,691 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.022s | Payload: 
+INFO 2026-02-27 00:12:20,761 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.021s | Payload: 
+INFO 2026-02-27 00:12:20,795 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.022s | Payload: 
+INFO 2026-02-27 00:14:12,075 Method: POST | Path: /api/schemes/scan/ | Status: 404 | Execution Time: 0.022s | Payload: {"uid":"123456789123"}
+INFO 2026-02-27 00:14:38,352 Method: POST | Path: /api/auth/login/ | Status: 200 | Execution Time: 2.025s | Payload: (hidden)
+INFO 2026-02-27 00:14:38,637 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.069s | Payload: 
+INFO 2026-02-27 00:14:38,757 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.108s | Payload: 
+INFO 2026-02-27 00:14:49,188 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.001s | Payload: 
+INFO 2026-02-27 00:14:49,195 Method: GET | Path: /api/admin/metrics/ | Status: 403 | Execution Time: 0.005s | Payload: 
+INFO 2026-02-27 00:14:53,800 Method: GET | Path: /api/citizen/profile/3/ | Status: 200 | Execution Time: 0.032s | Payload: 
+INFO 2026-02-27 00:14:53,832 Method: GET | Path: /api/citizen/profile/3/ | Status: 200 | Execution Time: 0.018s | Payload: 
+INFO 2026-02-27 00:14:54,911 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.031s | Payload: 
+INFO 2026-02-27 00:14:54,960 Method: GET | Path: /api/citizen/grievances/3/ | Status: 200 | Execution Time: 0.041s | Payload: 
+INFO 2026-02-27 00:14:55,997 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.022s | Payload: 
+INFO 2026-02-27 00:14:56,052 Method: GET | Path: /api/citizen/applications/3/ | Status: 200 | Execution Time: 0.051s | Payload: 
+INFO 2026-02-27 00:14:57,204 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.043s | Payload: 
+INFO 2026-02-27 00:14:57,237 Method: GET | Path: /api/citizen/schemes/search/ | Status: 200 | Execution Time: 0.028s | Payload: 
+INFO 2026-02-27 00:14:58,975 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.084s | Payload: 
+INFO 2026-02-27 00:14:59,047 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.063s | Payload: 
+INFO 2026-02-27 00:17:52,958 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.055s | Payload: 
+INFO 2026-02-27 00:17:52,997 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.035s | Payload: 
+INFO 2026-02-27 00:19:18,590 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.080s | Payload: 
+INFO 2026-02-27 00:19:18,658 Method: GET | Path: /api/citizen/dashboard/3/ | Status: 200 | Execution Time: 0.060s | Payload: 

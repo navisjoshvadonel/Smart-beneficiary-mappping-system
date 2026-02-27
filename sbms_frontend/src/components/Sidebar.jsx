@@ -100,57 +100,61 @@ export const Sidebar = () => {
                     })}
                 </nav>
 
-                <div className="px-6 mb-2">
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: isHovered ? 1 : 0 }}
-                        className="text-[10px] font-bold text-textMuted uppercase tracking-widest whitespace-nowrap"
-                    >
-                        ADMIN
-                    </motion.p>
-                </div>
-
-                <nav className="px-4 space-y-1">
-                    {adminItems.map((item) => {
-                        const isActive = activePath === item.path;
-                        return (
-                            <button
-                                key={item.label}
-                                onClick={() => { setActivePath(item.path); navigate(item.path); }}
-                                className={`w-full flex items-center px-2 py-3 rounded-xl relative group transition-all duration-300 ${isActive ? 'text-primary' : 'text-textMuted hover:text-text'
-                                    }`}
+                {user.role === 'Admin' && (
+                    <>
+                        <div className="px-6 mb-2">
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: isHovered ? 1 : 0 }}
+                                className="text-[10px] font-bold text-textMuted uppercase tracking-widest whitespace-nowrap"
                             >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-accent-gradient opacity-10 rounded-xl"
-                                        initial={false}
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                {isActive && (
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-gradient rounded-r-md shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-                                )}
+                                ADMIN
+                            </motion.p>
+                        </div>
 
-                                <div className="w-8 h-8 flex items-center justify-center shrink-0 relative z-10">
-                                    <item.icon className="w-5 h-5" />
-                                </div>
+                        <nav className="px-4 space-y-1">
+                            {adminItems.map((item) => {
+                                const isActive = activePath === item.path;
+                                return (
+                                    <button
+                                        key={item.label}
+                                        onClick={() => { setActivePath(item.path); navigate(item.path); }}
+                                        className={`w-full flex items-center px-2 py-3 rounded-xl relative group transition-all duration-300 ${isActive ? 'text-primary' : 'text-textMuted hover:text-text'
+                                            }`}
+                                    >
+                                        {isActive && (
+                                            <motion.div
+                                                layoutId="activeTab"
+                                                className="absolute inset-0 bg-accent-gradient opacity-10 rounded-xl"
+                                                initial={false}
+                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                            />
+                                        )}
+                                        {isActive && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-gradient rounded-r-md shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
+                                        )}
 
-                                <motion.span
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{
-                                        opacity: isHovered ? 1 : 0,
-                                        x: isHovered ? 0 : -10
-                                    }}
-                                    transition={{ duration: 0.2 }}
-                                    className="ml-4 font-medium whitespace-nowrap relative z-10"
-                                >
-                                    {item.label}
-                                </motion.span>
-                            </button>
-                        );
-                    })}
-                </nav>
+                                        <div className="w-8 h-8 flex items-center justify-center shrink-0 relative z-10">
+                                            <item.icon className="w-5 h-5" />
+                                        </div>
+
+                                        <motion.span
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{
+                                                opacity: isHovered ? 1 : 0,
+                                                x: isHovered ? 0 : -10
+                                            }}
+                                            transition={{ duration: 0.2 }}
+                                            className="ml-4 font-medium whitespace-nowrap relative z-10"
+                                        >
+                                            {item.label}
+                                        </motion.span>
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    </>
+                )}
             </div>
 
             {/* Profile / Sign Out Footer matching screenshot */}

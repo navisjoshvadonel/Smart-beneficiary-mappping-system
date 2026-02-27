@@ -58,7 +58,7 @@ export const GeminiBotWidget = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-8 right-8 z-[80]">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -150,13 +150,13 @@ export const GeminiBotWidget = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-16 h-16 rounded-full shadow-[0_0_25px_rgba(0,255,255,0.4)] flex items-center justify-center transition-all ${isOpen ? 'bg-indigo-600 border border-indigo-400' : 'bg-[#0F172A] border-2 border-cyan-400'
+                className={`w-16 h-16 rounded-full shadow-[0_0_25px_rgba(0,255,255,0.4)] flex items-center justify-center transition-all ${isOpen ? 'bg-indigo-600 border border-indigo-400' : 'bg-[#0F172A]'
                     }`}
             >
                 {isOpen ? (
                     <X className="w-6 h-6 text-white" />
                 ) : (
-                    <div className="scale-75">
+                    <div className="scale-75 translate-y-[3px]">
                         <RobotAvatar />
                     </div>
                 )}

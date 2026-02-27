@@ -34,7 +34,7 @@ export const BasicDetailsModal = ({ isOpen, onClose }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center pointer-events-auto"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[90] flex items-center justify-center pointer-events-auto"
                     />
 
                     {/* Modal Content */}
@@ -43,19 +43,19 @@ export const BasicDetailsModal = ({ isOpen, onClose }) => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-50 pointer-events-auto"
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] sm:w-full max-w-lg z-[100] pointer-events-auto"
                     >
-                        <div className="glass-card shadow-2xl border border-white/20 overflow-hidden relative group">
+                        <div className="glass-card shadow-2xl border border-white/20 overflow-hidden relative group max-h-[90vh] flex flex-col">
                             {/* Header Ambient Glow */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-accent-gradient" />
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-20 bg-accent-gradient opacity-20 blur-[50px] pointer-events-none" />
 
-                            <div className="p-6">
+                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold text-text">Verify Core Identity Details</h2>
                                     <button
                                         onClick={onClose}
-                                        className="p-1 rounded-full text-textMuted hover:text-text hover:bg-white/10 transition-colors glow-ring"
+                                        className="p-1 rounded-full text-textMuted hover:text-text hover:bg-white/10 transition-colors glow-ring flex-shrink-0"
                                     >
                                         <X className="w-5 h-5" />
                                     </button>
@@ -89,7 +89,7 @@ export const BasicDetailsModal = ({ isOpen, onClose }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end space-x-3 pt-4 border-t border-white/10 mt-6">
+                                    <div className="flex justify-end space-x-3 pt-4 border-t border-white/10 mt-6 shrink-0">
                                         <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-textMuted hover:text-text transition-colors">Abort</button>
                                         <motion.button
                                             whileHover={{ scale: 1.02 }}
