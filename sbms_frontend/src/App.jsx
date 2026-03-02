@@ -29,9 +29,12 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE";
 
+import { Toaster } from 'react-hot-toast'
+
 function App() {
   return (
     <ThemeProvider>
+      <Toaster position="top-right" reverseOrder={false} />
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <BrowserRouter>
           <Routes>
