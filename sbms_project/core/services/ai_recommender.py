@@ -34,8 +34,15 @@ class AIRecommenderService:
                     'desc': s.description[:200]
                 })
 
+            # Calculate age dynamically
+            from datetime import date
+            age = 0
+            if user.dob:
+                today = date.today()
+                age = today.year - user.dob.year - ((today.month, today.day) < (user.dob.month, user.dob.day))
+
             user_profile = {
-                'age': 25, # Simplified for now, should calculate from dob
+                'age': age,
                 'gender': user.gender,
                 'state': user.state,
                 'income': str(user.income),
@@ -46,9 +53,10 @@ class AIRecommenderService:
 
             prompt = (
                 f"User Profile: {json.dumps(user_profile)}\n"
-                f"User Query: {chat_query if chat_query else 'Find best schemes for me'}\n"
+                f"User Requested Needs: {chat_query if chat_query else 'Find best schemes for me'}\n"
                 f"Available Schemes: {json.dumps(scheme_list)}\n\n"
                 "Task: Return a JSON list of top 3 recommended scheme IDs and a short 'reason' for each.\n"
+                "STRICT CONSTRAINT: Only recommend schemes where the user's state matches the scheme's state (or 'All India') and the income is within logical bounds.\n"
                 "Format: [{\"scheme_id\": 1, \"reason\": \"Because...\"}, ...]"
             )
             
