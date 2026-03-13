@@ -15,7 +15,8 @@ class AIRecommenderService:
         return cls._instance
 
     def __init__(self):
-        genai.configure(api_key="AIzaSyCSqxdFD2wDdUYfJbJxdAvsJmSnsvj4n6M")
+        from django.conf import settings
+        genai.configure(api_key=settings.GEMINI_API_KEY)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     def recommend_schemes(self, user_id, chat_query=None):

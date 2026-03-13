@@ -216,5 +216,14 @@ export const CitizenService = {
             console.error("Error fetching AI recommendations:", error);
             throw error;
         }
+    },
+    getProfileStrength: async (userId) => {
+        try {
+            const response = await fetch(`${API_URL}/citizen/profile/strength/${userId}/`);
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching profile strength:", error);
+            throw error;
+        }
     }
 };

@@ -31,5 +31,6 @@ urlpatterns = [
     path('citizen/grievances/<int:user_id>/', views_citizen.citizen_grievances, name='citizen_grievances'),
     path('citizen/schemes/search/', views_citizen.search_schemes, name='search_schemes'),
     path('citizen/profile/<int:user_id>/', views_citizen.get_update_profile, name='get_update_profile'),
+    path('citizen/profile/strength/<int:user_id>/', views_citizen.get_profile_strength, name='get_profile_strength'),
     path('citizen/recommendations/<int:user_id>/', views_citizen.get_ai_recommendations, name='get_ai_recommendations'),
 ]

@@ -35,9 +35,10 @@ class NLPSchemeFinderService:
 
     @classmethod
     def _extract_gender(cls, text):
-        if re.search(r'\b(woman|female|girl)\b', text):
+        # English, Hindi, and Tamil keywords
+        if re.search(r'\b(woman|female|girl|mahila|stree|pen|pengal)\b', text):
             return 'Female'
-        elif re.search(r'\b(man|male|boy)\b', text):
+        elif re.search(r'\b(man|male|boy|purush|aadmi|aan|aangal)\b', text):
             return 'Male'
         return 'Any'
 

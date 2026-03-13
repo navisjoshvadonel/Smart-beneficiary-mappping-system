@@ -14,8 +14,9 @@ class SentimentService:
         return cls._instance
 
     def __init__(self):
+        from django.conf import settings
         # Using the existing key from the codebase
-        genai.configure(api_key="AIzaSyCSqxdFD2wDdUYfJbJxdAvsJmSnsvj4n6M")
+        genai.configure(api_key=settings.GEMINI_API_KEY)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     def analyze_grievance(self, text):

@@ -245,3 +245,39 @@ def get_update_profile(request, user_id):
             return JsonResponse({'status': 'success', 'message': 'Profile updated and eligibility re-evaluated.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_profile_strength(request, user_id):
+    try:
+        user = User.objects.filter(user_id=user_id).first()
+        if not user:
+            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+        
+        # Calculate strength
+        score = 0
+        total_fields = 8
+        missing = []
+        
+        if user.full_name: score += 1
+        if user.dob: score += 1
+        if user.gender: score += 1
+        if user.income > 0: score += 1
+        else: missing.append("Enter income details to unlock more schemes.")
+        
+        if user.occupation: score += 1
+        else: missing.append("Add occupation to refine eligibility.")
+        
+        if user.education: score += 1
+        if user.state: score += 1
+        if user.address: score += 1
+        
+        percentage = (score / total_fields) * 100
+        
+        return JsonResponse({
+            'status': 'success',
+            'strength': int(percentage),
+            'tips': missing if missing else ["Profile looks 100% complete!"]
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

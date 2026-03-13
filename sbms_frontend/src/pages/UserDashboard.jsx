@@ -25,6 +25,7 @@ export const UserDashboard = () => {
 
     // Filtering State
     const [searchQuery, setSearchQuery] = useState('');
+    const [strengthData, setStrengthData] = useState({ strength: 0, tips: [] });
     const [stateFilter, setStateFilter] = useState('All States');
     const [typeFilter, setTypeFilter] = useState('All Types');
     const [filteredSchemes, setFilteredSchemes] = useState([]);
@@ -53,6 +54,13 @@ export const UserDashboard = () => {
                     recent_applications: res.recent_applications
                 });
                 setFilteredSchemes(res.schemes);
+                
+                // Fetch strength
+                const sRes = await CitizenService.getProfileStrength(uid);
+                if (sRes.status === 'success') {
+                    setStrengthData({ strength: sRes.strength, tips: sRes.tips });
+                }
+
                 toast.success('Dashboard updated', { id: loadingToast });
             }
         } catch (error) {
@@ -203,17 +211,24 @@ export const UserDashboard = () => {
                         </div>
                         <div className="h-40 w-full relative">
                             <ResponsiveContainer width="100%" height="100%">
-                                <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="90%" barSize={12} data={[{ name: 'Profile', value: 85, fill: '#10b981' }]} startAngle={225} endAngle={-45}>
+                                <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="90%" barSize={12} data={[{ name: 'Profile', value: strengthData.strength, fill: strengthData.strength > 70 ? '#10b981' : '#f59e0b' }]} startAngle={225} endAngle={-45}>
                                     <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                                     <RadialBar background={{ fill: 'rgba(255,255,255,0.05)' }} dataKey="value" cornerRadius={6} />
                                 </RadialBarChart>
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-3xl font-bold text-text">85%</span>
+                                <span className="text-3xl font-bold text-text">{strengthData.strength}%</span>
                                 <span className="text-[10px] text-textMuted uppercase tracking-wider">Complete</span>
                             </div>
                         </div>
-                        <p className="text-xs text-textMuted text-center mt-2">Add income certificates to unlock 12 more schemes.</p>
+                        <div className="mt-4 space-y-2">
+                            {strengthData.tips.map((tip, i) => (
+                                <p key={i} className="text-[10px] text-textMuted flex items-center gap-2">
+                                    <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
+                                    {tip}
+                                </p>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="glass-card p-5 border border-white/10">
