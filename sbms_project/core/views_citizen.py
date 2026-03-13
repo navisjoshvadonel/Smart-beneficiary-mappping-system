@@ -122,13 +122,44 @@ def citizen_grievances(request, user_id):
         try:
             body = json.loads(request.body)
             complaintText = body.get('complaint')
+            scheme_id = body.get('scheme_id')
             if not complaintText:
                 return JsonResponse({'status': 'error', 'message': 'Complaint details required'}, status=400)
             
-            Grievance.objects.create(user=user, complaint_text=complaintText, status='Open')
-            return JsonResponse({'status': 'success', 'message': 'Grievance submitted successfully'})
+            from core.services.grievance_service import GrievanceModule
+            scheme = Scheme.objects.filter(scheme_id=scheme_id).first() if scheme_id else None
+            
+            GrievanceModule.lodge_grievance(user, scheme, complaintText)
+            return JsonResponse({'status': 'success', 'message': 'Grievance submitted successfully with AI analysis.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_ai_recommendations(request, user_id):
+    try:
+        from core.services.ai_recommender import AIRecommenderService
+        query = request.GET.get('q')
+        
+        recommender = AIRecommenderService.get_instance()
+        recommendations = recommender.recommend_schemes(user_id, query)
+        
+        # Enrich recommendations with full scheme details
+        enriched = []
+        for r in recommendations:
+            scheme = Scheme.objects.filter(scheme_id=r['scheme_id']).first()
+            if scheme:
+                enriched.append({
+                    'id': scheme.scheme_id,
+                    'name': scheme.scheme_name,
+                    'reason': r['reason'],
+                    'benefit': scheme.benefit_type,
+                    'state': scheme.state
+                })
+        
+        return JsonResponse({'status': 'success', 'recommendations': enriched})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 @csrf_exempt
 @require_http_methods(["GET"])
@@ -214,3 +245,39 @@ def get_update_profile(request, user_id):
             return JsonResponse({'status': 'success', 'message': 'Profile updated and eligibility re-evaluated.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_profile_strength(request, user_id):
+    try:
+        user = User.objects.filter(user_id=user_id).first()
+        if not user:
+            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+        
+        # Calculate strength
+        score = 0
+        total_fields = 8
+        missing = []
+        
+        if user.full_name: score += 1
+        if user.dob: score += 1
+        if user.gender: score += 1
+        if user.income > 0: score += 1
+        else: missing.append("Enter income details to unlock more schemes.")
+        
+        if user.occupation: score += 1
+        else: missing.append("Add occupation to refine eligibility.")
+        
+        if user.education: score += 1
+        if user.state: score += 1
+        if user.address: score += 1
+        
+        percentage = (score / total_fields) * 100
+        
+        return JsonResponse({
+            'status': 'success',
+            'strength': int(percentage),
+            'tips': missing if missing else ["Profile looks 100% complete!"]
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

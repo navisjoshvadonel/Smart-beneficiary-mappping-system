@@ -10,22 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# Load .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-t#a=i-e3j!^%b_v^cav63#i&0k$8#_07^&sy70(ue+xj2_e++2'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -82,11 +82,11 @@ pymysql.install_as_MySQLdb()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'smart_beneficiary_system',
-        'USER': 'root',
-        'PASSWORD': 'navis2005',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME', 'smart_beneficiary_system'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
 
@@ -133,11 +133,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # SBMS Custom Configuration
-AADHAAR_ENCRYPTION_KEY = 'sbms_encrypt_key_2026'
-EXCEL_DATASET_PATH = r'D:\Smart BENE mapping\FULL_DATASET.xlsx'
+AADHAAR_ENCRYPTION_KEY = os.getenv('AADHAAR_ENCRYPTION_KEY', 'sbms_encrypt_key_fallback')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+EXCEL_DATASET_PATH = os.getenv('EXCEL_DATASET_PATH', r'D:\Smart BENE mapping\FULL_DATASET.xlsx')
 DEFAULT_STATE = 'Tamil Nadu'
-ADMIN_EMAIL = 'admin@sbms.gov'
-ADMIN_PASSWORD = 'admin123'
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@sbms.gov')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
 
 CORS_ALLOW_ALL_ORIGINS = True
 

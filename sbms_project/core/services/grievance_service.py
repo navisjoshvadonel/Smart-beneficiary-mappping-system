@@ -4,10 +4,18 @@ from django.utils import timezone
 class GrievanceModule:
     @classmethod
     def lodge_grievance(cls, user, scheme, text):
+        from .sentiment_service import SentimentService
+        
+        # Analyze sentiment using AI
+        analysis = SentimentService.get_instance().analyze_grievance(text)
+        
         return Grievance.objects.create(
             user=user,
             scheme=scheme,
-            complaint_text=text
+            complaint_text=text,
+            sentiment=analysis.get('sentiment', 'Neutral'),
+            urgency=analysis.get('urgency', 'Medium'),
+            issue_category=analysis.get('category', 'Other')
         )
 
     @classmethod

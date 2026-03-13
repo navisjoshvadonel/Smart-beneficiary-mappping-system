@@ -16,6 +16,7 @@ urlpatterns = [
     path('admin/schemes/create/', views_admin.create_scheme, name='create_scheme'),
     path('admin/schemes/<int:scheme_id>/update/', views_admin.update_scheme, name='update_scheme'),
     path('admin/schemes/<int:scheme_id>/delete/', views_admin.delete_scheme, name='delete_scheme'),
+    path('admin/analytics/', views_admin.get_admin_analytics, name='admin_analytics'),
 
     path('ai/chat/', views_ai.chat_with_gemini, name='chat_with_gemini'),
     
@@ -30,4 +31,6 @@ urlpatterns = [
     path('citizen/grievances/<int:user_id>/', views_citizen.citizen_grievances, name='citizen_grievances'),
     path('citizen/schemes/search/', views_citizen.search_schemes, name='search_schemes'),
     path('citizen/profile/<int:user_id>/', views_citizen.get_update_profile, name='get_update_profile'),
+    path('citizen/profile/strength/<int:user_id>/', views_citizen.get_profile_strength, name='get_profile_strength'),
+    path('citizen/recommendations/<int:user_id>/', views_citizen.get_ai_recommendations, name='get_ai_recommendations'),
 ]

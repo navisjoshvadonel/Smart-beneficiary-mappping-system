@@ -13,10 +13,11 @@ class GeminiBotService:
         return cls._instance
 
     def __init__(self):
-        # API Key provided by the user
-        genai.configure(api_key="AIzaSyCSqxdFD2wDdUYfJbJxdAvsJmSnsvj4n6M")
+        from django.conf import settings
+        # Use API Key from settings
+        genai.configure(api_key=settings.GEMINI_API_KEY)
         
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
         self._chat_session = self.model.start_chat(history=[])
 
     def get_scheme_context(self):

@@ -99,3 +99,46 @@ def delete_scheme(request, scheme_id):
         return JsonResponse({'status': 'success', 'message': 'Scheme deleted successfully'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_admin_analytics(request):
+    if not is_admin(request):
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+        
+    try:
+        from core.models import Grievance, Application, Scheme, User
+        from django.db.models import Count
+        
+        # Scheme distribution by state
+        states_data = list(Scheme.objects.values('state').annotate(count=Count('scheme_id')))
+        
+        # Application status summary
+        app_stats = list(Application.objects.values('status').annotate(count=Count('application_id')))
+        
+        # Grievance sentiment breakdown
+        sentiment_stats = list(Grievance.objects.values('sentiment').annotate(count=Count('grievance_id')))
+        
+        # Recent activity
+        recent_apps = Application.objects.select_related('user', 'scheme').order_by('-applied_on')[:10]
+        recent_apps_data = [{
+            'id': app.application_id,
+            'user': app.user.full_name,
+            'scheme': app.scheme.scheme_name,
+            'status': app.status,
+            'date': app.applied_on.isoformat()
+        } for app in recent_apps]
+        
+        return JsonResponse({
+            'status': 'success',
+            'data': {
+                'states_data': states_data,
+                'app_stats': app_stats,
+                'sentiment_stats': sentiment_stats,
+                'recent_activity': recent_apps_data,
+                'total_users': User.objects.count(),
+                'total_schemes': Scheme.objects.count(),
+                'total_applications': Application.objects.count()
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
