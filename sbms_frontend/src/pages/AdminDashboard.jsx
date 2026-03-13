@@ -17,30 +17,34 @@ export const AdminDashboard = () => {
 
     useEffect(() => {
         const fetchMetrics = async () => {
+            const storedUser = localStorage.getItem('sbms_user');
+            if (!storedUser) return;
+            const admin = JSON.parse(storedUser);
+
             try {
-                const res = await AdminAnalyticsSyncService.getMetrics();
+                // Use the new advanced analytics endpoint
+                const res = await AdminAnalyticsSyncService.getAdvancedAnalytics(admin.id);
                 if (res.status === 'success' && res.data) {
                     const data = res.data;
                     setKpis([
-                        { label: 'Total Users', value: data['Total Users']?.toString() || '0', icon: Users, color: 'text-indigo-400', glow: 'shadow-[0_0_15px_rgba(129,140,248,0.5)]' },
-                        { label: 'Active Grievances', value: data['Active Grievances']?.toString() || '0', icon: ShieldAlert, color: 'text-red-400', glow: 'shadow-[0_0_15px_rgba(248,113,113,0.5)]' },
-                        { label: 'Tot Applications', value: data['Total Applications']?.toString() || '0', icon: Cpu, color: 'text-teal-400', glow: 'shadow-[0_0_15px_rgba(45,212,191,0.5)]' },
-                        { label: 'Approval Rate', value: `${data['Approval Rate']}%`, icon: Activity, color: 'text-green-400', glow: 'shadow-[0_0_15px_rgba(74,222,128,0.5)]' },
+                        { label: 'Total Citizens', value: data.total_users?.toString() || '0', icon: Users, color: 'text-indigo-400', glow: 'shadow-[0_0_15px_rgba(129,140,248,0.5)]' },
+                        { label: 'Grievance Sentiment', value: data.sentiment_stats?.[0]?.sentiment || 'Neutral', icon: ShieldAlert, color: 'text-red-400', glow: 'shadow-[0_0_15px_rgba(248,113,113,0.5)]' },
+                        { label: 'Tot Applications', value: data.total_applications?.toString() || '0', icon: Cpu, color: 'text-teal-400', glow: 'shadow-[0_0_15px_rgba(45,212,191,0.5)]' },
+                        { label: 'Active Schemes', value: data.total_schemes?.toString() || '0', icon: Activity, color: 'text-green-400', glow: 'shadow-[0_0_15px_rgba(74,222,128,0.5)]' },
                     ]);
 
-                    const schemeHMap = data['Welfare Heatmap'] || [];
-                    const formattedAllocations = schemeHMap.slice(0, 5).map((item, idx) => {
+                    const formattedAllocations = (data.states_data || []).map((item, idx) => {
                         const colors = ['#8b5cf6', '#14b8a6', '#f43f5e', '#f59e0b', '#3b82f6'];
                         return {
-                            name: item.scheme__scheme_name || 'Scheme',
-                            val: item.count || 0,
+                            name: item.state,
+                            val: item.count,
                             fill: colors[idx % colors.length]
                         };
                     });
                     setAllocations(formattedAllocations);
                 }
             } catch (err) {
-                console.error("Failed to sync metrics", err);
+                console.error("Failed to sync advanced metrics", err);
             }
         };
         fetchMetrics();

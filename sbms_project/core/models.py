@@ -122,6 +122,11 @@ class Grievance(models.Model):
     complaint_text = models.TextField()
     status = models.CharField(max_length=100, default='Open')
     admin_remark = models.TextField(null=True, blank=True)
+    # New AI-driven fields
+    sentiment = models.CharField(max_length=50, null=True, blank=True, default='Neutral')
+    urgency = models.CharField(max_length=50, null=True, blank=True, default='Medium')
+    issue_category = models.CharField(max_length=100, null=True, blank=True)
+    
     raised_on = models.DateTimeField(auto_now_add=True)
     resolved_on = models.DateTimeField(null=True, blank=True)
 

@@ -122,13 +122,44 @@ def citizen_grievances(request, user_id):
         try:
             body = json.loads(request.body)
             complaintText = body.get('complaint')
+            scheme_id = body.get('scheme_id')
             if not complaintText:
                 return JsonResponse({'status': 'error', 'message': 'Complaint details required'}, status=400)
             
-            Grievance.objects.create(user=user, complaint_text=complaintText, status='Open')
-            return JsonResponse({'status': 'success', 'message': 'Grievance submitted successfully'})
+            from core.services.grievance_service import GrievanceModule
+            scheme = Scheme.objects.filter(scheme_id=scheme_id).first() if scheme_id else None
+            
+            GrievanceModule.lodge_grievance(user, scheme, complaintText)
+            return JsonResponse({'status': 'success', 'message': 'Grievance submitted successfully with AI analysis.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_ai_recommendations(request, user_id):
+    try:
+        from core.services.ai_recommender import AIRecommenderService
+        query = request.GET.get('q')
+        
+        recommender = AIRecommenderService.get_instance()
+        recommendations = recommender.recommend_schemes(user_id, query)
+        
+        # Enrich recommendations with full scheme details
+        enriched = []
+        for r in recommendations:
+            scheme = Scheme.objects.filter(scheme_id=r['scheme_id']).first()
+            if scheme:
+                enriched.append({
+                    'id': scheme.scheme_id,
+                    'name': scheme.scheme_name,
+                    'reason': r['reason'],
+                    'benefit': scheme.benefit_type,
+                    'state': scheme.state
+                })
+        
+        return JsonResponse({'status': 'success', 'recommendations': enriched})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 @csrf_exempt
 @require_http_methods(["GET"])

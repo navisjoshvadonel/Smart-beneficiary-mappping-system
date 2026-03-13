@@ -10,11 +10,13 @@ import toast from 'react-hot-toast';
 import { MetricCard } from '../components/dashboard/MetricCard';
 import { SchemeMatchCard } from '../components/dashboard/SchemeMatchCard';
 import { ApplicationSnippet } from '../components/dashboard/ApplicationSnippet';
+import { SmartScanOverlay } from '../components/SmartScanOverlay';
 
 export const UserDashboard = () => {
     const [firstName, setFirstName] = useState('Citizen');
     const [userId, setUserId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showScan, setShowScan] = useState(true);
     const [dashboardData, setDashboardData] = useState({
         metrics: { eligible: 0, categories: 0, applications: 0, grievances: 0 },
         schemes: [],
@@ -225,6 +227,7 @@ export const UserDashboard = () => {
                     </div>
                 </div>
             </div>
+            {showScan && <SmartScanOverlay onComplete={() => setShowScan(false)} />}
         </div>
     );
 };

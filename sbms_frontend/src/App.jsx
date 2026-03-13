@@ -30,6 +30,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE";
 
 import { Toaster } from 'react-hot-toast'
+import { BENEBot } from './components/BENEBot'
 
 function App() {
   return (
@@ -98,6 +99,7 @@ function App() {
               </DashboardLayout>
             } />
           </Routes>
+          <BENEBot />
         </BrowserRouter>
       </GoogleOAuthProvider>
     </ThemeProvider>

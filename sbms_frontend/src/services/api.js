@@ -67,6 +67,17 @@ export const AdminAnalyticsSyncService = {
             console.error("Error resolving grievance:", error);
             throw error;
         }
+    },
+    getAdvancedAnalytics: async (adminId) => {
+        try {
+            const response = await fetch(`${API_URL}/admin/analytics/`, {
+                headers: { 'X-User-ID': adminId }
+            });
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching admin analytics:", error);
+            throw error;
+        }
     }
 };
 
@@ -194,6 +205,15 @@ export const CitizenService = {
             return await response.json();
         } catch (error) {
             console.error("Error updating profile:", error);
+            throw error;
+        }
+    },
+    getAIRecommendations: async (userId, query = '') => {
+        try {
+            const response = await fetch(`${API_URL}/citizen/recommendations/${userId}/?q=${query}`);
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching AI recommendations:", error);
             throw error;
         }
     }
