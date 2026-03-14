@@ -86,6 +86,15 @@ export const BENEBot = () => {
         }
     };
 
+    const clearHistory = async () => {
+        try {
+            await fetch('/api/ai/chat/', { method: 'DELETE' });
+            setMessages([{ id: Date.now(), text: "Chat history cleared. How can I help you today?", sender: 'bot' }]);
+        } catch (error) {
+            console.error("Failed to clear history", error);
+        }
+    };
+
     return (
         <div className="fixed bottom-6 right-6 z-50">
             <AnimatePresence>
@@ -111,9 +120,18 @@ export const BENEBot = () => {
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={() => setIsOpen(false)} className="text-textMuted hover:text-white transition-colors">
-                                <X size={20} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={clearHistory} 
+                                    className="text-[10px] text-textMuted hover:text-red-400 transition-colors uppercase font-bold tracking-widest border border-white/10 px-2 py-1 rounded"
+                                    title="Clear Session"
+                                >
+                                    Reset
+                                </button>
+                                <button onClick={() => setIsOpen(false)} className="text-textMuted hover:text-white transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Chat Body */}
