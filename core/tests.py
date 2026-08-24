@@ -1,9 +1,10 @@
 import json
+from datetime import date
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory, SimpleTestCase
+from django.test import RequestFactory, TestCase, SimpleTestCase
 
 from . import views
 from .forms import LoginForm, UserRegistrationForm
@@ -37,7 +38,7 @@ class AuthenticationTests(SimpleTestCase):
 class EligibilityTests(SimpleTestCase):
     def test_match_score_includes_location_and_disability(self):
         user = SimpleNamespace(
-            dob=__import__('datetime').date(1990, 1, 1),
+            dob=date(1990, 1, 1),
             gender='Female', income=50000, address='Pune',
             disability_cert=True, pension_status=False,
             unemployment_status=False, education='Graduate',
@@ -54,6 +55,11 @@ class EligibilityTests(SimpleTestCase):
         with patch.object(views.RuleEngine, 'objects', manager):
             score = views._calculate_match_score(user, SimpleNamespace())
         self.assertEqual(score, 100)
+
+    def test_match_score_handles_missing_user_dob(self):
+        user = SimpleNamespace(dob=None)
+        score = views._calculate_match_score(user, SimpleNamespace())
+        self.assertEqual(score, 75)
 
 
 class PermissionAndWorkflowTests(RequestTestCase):
@@ -72,7 +78,7 @@ class PermissionAndWorkflowTests(RequestTestCase):
         custom_user = SimpleNamespace(user_id=10)
         eligibility = Mock(exists=Mock(return_value=False))
         with patch.object(views, 'get_custom_user', return_value=custom_user), \
-               patch.object(views, 'get_object_or_404', return_value=SimpleNamespace()), \
+             patch.object(views, 'get_object_or_404', return_value=SimpleNamespace()), \
              patch.object(views.UserEligibility.objects, 'filter', return_value=eligibility):
             response = views.apply_scheme(self.request('post', user=user), 1)
         self.assertEqual(response.status_code, 302)
@@ -93,6 +99,19 @@ class PermissionAndWorkflowTests(RequestTestCase):
             response = views.ai_chat(request)
         self.assertEqual(response.status_code, 503)
         self.assertNotIn('provider secret', response.content.decode())
+
+    @patch.object(views.messages, 'error')
+    def test_admin_delete_user_prevents_self_deletion(self, error):
+        user = SimpleNamespace(is_authenticated=True, is_active=True, is_staff=True, email='admin@example.com', username='admin@example.com')
+        custom_user = SimpleNamespace(user_id=1, email='admin@example.com')
+
+        req = self.request('post', user=user)
+        req.POST = {}
+        with patch.object(views.CustomUser.objects, 'get', return_value=custom_user):
+            response = views.admin_delete_user(req, 1)
+
+        self.assertEqual(response.status_code, 302)
+        error.assert_called_once()
 
 
 class OTPTests(RequestTestCase):

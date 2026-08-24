@@ -7,6 +7,13 @@ Usage: python Load.py
 import mysql.connector
 import openpyxl
 import os
+import sys
+
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 
 # ── Dataset path ───────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

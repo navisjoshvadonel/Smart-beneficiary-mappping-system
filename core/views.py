@@ -1,4 +1,4 @@
-﻿from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import CreateView, FormView
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
@@ -213,6 +213,9 @@ def logout_view(request):
 def _calculate_match_score(custom_user, scheme):
     """Returns 0-100 representing how well the user fits the scheme rules."""
     try:
+        if not custom_user or not getattr(custom_user, 'dob', None):
+            return 75
+
         rules = RuleEngine.objects.filter(scheme=scheme)
         if not rules.exists():
             return 75
@@ -500,7 +503,7 @@ def document_checklist(request, scheme_id):
         age   = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
         user_ctx = (
             f"Name: {custom_user.name}, Age: {age}, Gender: {custom_user.gender or 'Not specified'}, "
-            f"Income: â‚¹{custom_user.income or 'Not specified'}/year, "
+            f"Income: ₹{custom_user.income or 'Not specified'}/year, "
             f"Occupation: {custom_user.occupation or 'Not specified'}, "
             f"Education: {custom_user.education or 'Not specified'}, "
             f"Address: {custom_user.address or 'Not specified'}"
@@ -1103,11 +1106,11 @@ def forgot_password(request):
 
         try:
             send_mail(
-                subject='Smart Beneficiary Mapping System â€” Password Reset OTP',
+                subject='Smart Beneficiary Mapping System — Password Reset OTP',
                 message=(
                     f"Hello,\n\nYour OTP to reset your Smart Beneficiary Mapping System password is:\n\n"
                     f"    {otp}\n\nThis code expires in 10 minutes. Do not share it.\n\n"
-                    f"If you didn't request this, ignore this email.\n\nâ€” Smart Beneficiary Mapping System Team"
+                    f"If you didn't request this, ignore this email.\n\n— Smart Beneficiary Mapping System Team"
                 ),
                 from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@benefitbridge.in'),
                 recipient_list=[email],
@@ -1216,8 +1219,10 @@ def edit_profile(request):
         if form.is_valid():
             form.save()
             # Re-run eligibility with updated profile data
-            with connection.cursor() as cursor:
-                cursor.callproc('check_user_eligibility', [custom_user.user_id])
+            try:
+                _recalculate_eligibility(custom_user)
+            except Exception as e:
+                logger.exception("Error recalculating eligibility in edit_profile: %s", e)
             messages.success(request, 'Profile updated! Your eligibility has been recalculated.')
             return redirect('dashboard')
     else:
@@ -1310,16 +1315,12 @@ def resolve_grievance(request, grv_id):
 
             now = timezone.now()
 
-            # Use raw SQL so we are never blocked by ORM column-mapping issues
-            with db_conn.cursor() as cur:
-                cur.execute(
-                    """UPDATE Grievances
-                          SET status = 'Resolved',
-                              admin_remark = %s,
-                              resolved_on  = %s
-                        WHERE grievance_id = %s""",
-                    [admin_remark or None, now, grv_id]
-                )
+            # Update status, admin_remark, and resolved_on via ORM for multi-db compatibility
+            Grievance.objects.filter(grievance_id=grv_id).update(
+                status='Resolved',
+                admin_remark=admin_remark or None,
+                resolved_on=now
+            )
 
             # Try to e-mail user (fail silently)
             try:
@@ -1328,14 +1329,14 @@ def resolve_grievance(request, grv_id):
                 if user_email:
                     scheme_name = grv.scheme.scheme_name if grv.scheme else 'General'
                     send_mail(
-                        subject=f'Smart Beneficiary Mapping System â€” Grievance GRV-{grv_id} Resolved',
+                        subject=f'Smart Beneficiary Mapping System — Grievance GRV-{grv_id} Resolved',
                         message=(
                             f"Dear {grv.user.name},\n\n"
                             f"Your grievance (GRV-{grv_id}) related to '{scheme_name}' "
                             f"has been resolved.\n\n"
                             f"Admin Remark: {admin_remark or 'No additional remarks.'}\n\n"
                             f"Thank you for reaching out to Smart Beneficiary Mapping System.\n\n"
-                            f"\u2014 Smart Beneficiary Mapping System Team"
+                            f"— Smart Beneficiary Mapping System Team"
                         ),
                         from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@sbms.in'),
                         recipient_list=[user_email],
@@ -1435,11 +1436,21 @@ def admin_delete_user(request, user_id):
             custom_user = CustomUser.objects.get(user_id=user_id)
             email = custom_user.email
 
+            # Prevent deletion of current user or staff/superuser
+            if email and (email.lower() == getattr(request.user, 'email', '').lower() or email.lower() == getattr(request.user, 'username', '').lower()):
+                messages.error(request, "Security violation: You cannot delete your active administrator account.")
+                return redirect('admin_users')
+
             # Delete auth.User linked by email (if exists)
             if email:
                 from django.contrib.auth import get_user_model
                 AuthUser = get_user_model()
-                AuthUser.objects.filter(username=email).delete()
+                target_auth = AuthUser.objects.filter(username=email).first()
+                if target_auth and (target_auth.is_staff or target_auth.is_superuser):
+                    messages.error(request, "Security violation: Cannot delete an administrator or staff user.")
+                    return redirect('admin_users')
+                if target_auth:
+                    target_auth.delete()
 
             # Delete the CustomUser (cascades to UserEligibility, UserCategories etc.)
             custom_user.delete()
@@ -1466,7 +1477,7 @@ def admin_export_csv(request):
     if export_type == 'users':
         writer.writerow(['User ID', 'Name', 'Email', 'Phone', 'DOB', 'Gender', 'Aadhaar', 'Income', 'Occupation'])
         for u in CustomUser.objects.all():
-            masked = f"XXXX-XXXX-{u.aadhaar_no[-4:]}" if u.aadhaar_no and len(u.aadhaar_no) >= 4 else "â€”"
+            masked = f"XXXX-XXXX-{u.aadhaar_no[-4:]}" if u.aadhaar_no and len(u.aadhaar_no) >= 4 else "—"
             writer.writerow([u.user_id, u.name, u.email, u.phone, u.dob, u.gender, masked, u.income, u.occupation])
             
     elif export_type == 'applications':
@@ -1583,7 +1594,7 @@ def ai_chat(request):
     if error:
         return JsonResponse({'error': error}, status=400)
 
-    api_key = getattr(settings, 'GROQ_API_KEY', None)
+    api_key = getattr(settings, 'GROQ_API_KEY', None) or getattr(settings, 'GEMINI_API_KEY', None)
     if not api_key or str(api_key).startswith('your'):
         return JsonResponse({'reply': 'The AI assistant is currently unavailable. You can still browse your verified scheme matches and application status.'})
 

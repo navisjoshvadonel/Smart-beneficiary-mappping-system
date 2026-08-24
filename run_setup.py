@@ -1,6 +1,13 @@
 import os
+import sys
 import django
 from django.db import connection
+
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'beneficiary_system.settings')
 django.setup()
@@ -8,19 +15,19 @@ django.setup()
 def _add_column(cursor, sql, desc):
     try:
         cursor.execute(sql)
-        print(f"  ✅ Added: {desc}")
+        print(f"  [OK] Added: {desc}")
     except Exception as e:
         if 'duplicate column' in str(e).lower() or '1060' in str(e):
-            print(f"  ⏭  Already exists: {desc}")
+            print(f"  [SKIP] Already exists: {desc}")
         else:
-            print(f"  ❌ FAILED {desc}: {e}")
+            print(f"  [FAIL] {desc}: {e}")
 
 def _create_table(cursor, sql, desc):
     try:
         cursor.execute(sql)
-        print(f"  ✅ Created table: {desc}")
+        print(f"  [OK] Created table: {desc}")
     except Exception as e:
-        print(f"  ⏭  Table {desc}: {e}")
+        print(f"  [SKIP] Table {desc}: {e}")
 
 def setup_db():
     print("=" * 50)

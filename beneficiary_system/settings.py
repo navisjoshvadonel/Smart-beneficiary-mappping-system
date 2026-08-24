@@ -213,9 +213,11 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 
 # ── CSRF ───────────────────────────────────────────────────────────────────
 CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
-railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
 if railway_domain:
-    CSRF_TRUSTED_ORIGINS.append(f'https://{railway_domain}')
+    clean_domain = railway_domain.replace('https://', '').replace('http://', '').strip('/')
+    if clean_domain:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{clean_domain}')
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
