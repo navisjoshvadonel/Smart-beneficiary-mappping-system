@@ -11,7 +11,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django import forms
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
@@ -74,6 +73,25 @@ def _get_message_from_request(request, key='message'):
     if len(message) > AI_MESSAGE_MAX_LENGTH:
         return None, f'Message must be {AI_MESSAGE_MAX_LENGTH} characters or fewer.'
     return message, None
+
+
+def _recalculate_eligibility(custom_user):
+    """Rebuild eligibility using database rules; works on SQLite and MySQL."""
+    selected = UserCategories.objects.filter(user_id=custom_user.user_id).values_list('category_id', flat=True)
+    rules = RuleEngine.objects.filter(category_id__in=selected).select_related('scheme')
+    seen = set()
+    for rule in rules:
+        if rule.scheme_id in seen:
+            continue
+        seen.add(rule.scheme_id)
+        score = _calculate_match_score(custom_user, rule.scheme)
+        status = 'Eligible' if score == 100 else 'Not Eligible'
+        reason = 'Matched all configured eligibility criteria.' if status == 'Eligible' else 'One or more configured eligibility criteria were not met.'
+        UserEligibility.objects.update_or_create(
+            user_id=custom_user.user_id, scheme_id=rule.scheme_id,
+            defaults={'eligibility_status': status, 'reason': reason},
+        )
+    UserEligibility.objects.filter(user_id=custom_user.user_id).exclude(scheme_id__in=seen).delete()
 
 
 
@@ -391,13 +409,13 @@ class CategorySelectionView(FormView):
                 user_id=custom_user.user_id,
                 category_id=category.category_id
             )
-        with connection.cursor() as cursor:
-            cursor.callproc('check_user_eligibility', [custom_user.user_id])
+        _recalculate_eligibility(custom_user)
         messages.success(self.request, 'Eligibility checked! View your results below.')
         return super().form_valid(form)
 
 
 # â”€â”€ Delete searches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@require_POST
 def delete_search(request, user_cat_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -419,6 +437,7 @@ def delete_search(request, user_cat_id):
     return redirect('dashboard')
 
 
+@require_POST
 def delete_search_all(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -463,6 +482,7 @@ def scheme_apply_guide(request, scheme_id):
 
 
 # â”€â”€ Document Checklist (Gemini-powered, AJAX) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@require_POST
 def document_checklist(request, scheme_id):
     """Return a Gemini-generated personalised document checklist as JSON."""
     if not request.user.is_authenticated:
@@ -547,10 +567,10 @@ def document_checklist(request, scheme_id):
                 checklist = _json.loads(raw.strip())
                 return JsonResponse({'checklist': checklist, 'source': 'groq'})
             else:
-                print(f"Groq API error: {resp.text}")
+                logger.warning('Document checklist provider returned HTTP %s', resp.status_code)
 
-        except Exception as e:
-            print(f"Gemini checklist error: {e}")
+        except Exception:
+            logger.exception('Document checklist provider failed')
 
     # â”€â”€ Generic fallback checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     fallback = [
@@ -1207,19 +1227,20 @@ def edit_profile(request):
 
 
 # â”€â”€ Re-check Eligibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@require_POST
 def recheck_eligibility(request):
     if not request.user.is_authenticated:
         return redirect('login')
     if request.method == 'POST':
         custom_user = get_custom_user(request.user)
         if custom_user:
-            with connection.cursor() as cursor:
-                cursor.callproc('check_user_eligibility', [custom_user.user_id])
+            _recalculate_eligibility(custom_user)
             messages.success(request, 'Eligibility rechecked successfully!')
     return redirect('dashboard')
 
 
 # â”€â”€ Withdraw Application â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@require_POST
 def withdraw_application(request, app_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1265,13 +1286,15 @@ def admin_grievances(request):
             'open_count':    open_count,
             'resolved_count': resolved_count,
         })
-    except Exception as e:
-        import traceback
-        return HttpResponse(f"<pre>{traceback.format_exc()}</pre>", status=500)
+    except Exception:
+        logger.exception('Unable to load grievances for staff user')
+        messages.error(request, 'Grievances are temporarily unavailable. Please try again.')
+        return redirect('admin_stats')
 
 
 # â”€â”€ Admin: Resolve a Grievance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @staff_member_required(login_url='login')
+@require_POST
 def resolve_grievance(request, grv_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1323,8 +1346,9 @@ def resolve_grievance(request, grv_id):
 
             messages.success(request, f'Grievance GRV-{grv_id} marked as Resolved.')
 
-        except Exception as e:
-            messages.error(request, f'Error resolving grievance: {e}')
+        except Exception:
+            logger.exception('Unable to resolve grievance %s', grv_id)
+            messages.error(request, 'Unable to resolve this grievance. Please try again.')
 
     return redirect('admin_grievances')
 
@@ -1403,6 +1427,7 @@ def admin_users(request):
 
 
 @staff_member_required(login_url='login')
+@require_POST
 def admin_delete_user(request, user_id):
     """Staff-only: delete a CustomUser + its linked auth.User by email."""
     if request.method == 'POST':
@@ -1421,8 +1446,9 @@ def admin_delete_user(request, user_id):
             messages.success(request, f"User #{user_id} deleted successfully.")
         except CustomUser.DoesNotExist:
             messages.error(request, f"User #{user_id} not found.")
-        except Exception as e:
-            messages.error(request, f"Error deleting user: {e}")
+        except Exception:
+            logger.exception('Unable to delete user %s', user_id)
+            messages.error(request, 'Unable to delete this user.')
 
     return redirect('admin_users')
 
@@ -1456,21 +1482,6 @@ def admin_announcements(request):
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('home')
 
-    # â”€â”€ Ensure the Announcements table exists (create on-the-fly if missing) â”€â”€
-    from django.db import connection as _conn
-    try:
-        with _conn.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS Announcements (
-                    id         INT AUTO_INCREMENT PRIMARY KEY,
-                    message    TEXT NOT NULL,
-                    is_active  BOOLEAN DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-    except Exception as _e:
-        print(f"Announcements table create warning: {_e}")
-
     try:
         if request.method == 'POST':
             action = request.POST.get('action')
@@ -1498,13 +1509,10 @@ def admin_announcements(request):
 
         announcements = Announcement.objects.all().order_by('-created_at')
         return render(request, 'admin_announcements.html', {'announcements': announcements})
-    except Exception as e:
-        import traceback
-        return HttpResponse(
-            f'<h3 style="font-family:monospace;color:red">Announcements Error</h3>'
-            f'<pre>{traceback.format_exc()}</pre>',
-            status=500
-        )
+    except Exception:
+        logger.exception('Unable to manage announcements')
+        messages.error(request, 'Announcements are temporarily unavailable.')
+        return redirect('admin_stats')
 
 
 @staff_member_required(login_url='login')
@@ -1577,7 +1585,7 @@ def ai_chat(request):
 
     api_key = getattr(settings, 'GROQ_API_KEY', None)
     if not api_key or str(api_key).startswith('your'):
-        return JsonResponse({'reply': '⚠️ GROQ_API_KEY is not configured in Railway environment variables.'})
+        return JsonResponse({'reply': 'The AI assistant is currently unavailable. You can still browse your verified scheme matches and application status.'})
 
     import requests as _req
     from datetime import date as _d
@@ -1656,10 +1664,11 @@ def ai_chat(request):
             return JsonResponse({'reply': '⏳ Rate limit reached. Please wait a moment and try again.'})
         elif resp.status_code in (401, 403):
             print(f"[AI Chat] Groq auth error: {resp.text[:200]}")
-            return JsonResponse({'reply': '⚠️ Invalid GROQ_API_KEY. Please update it in Railway → Variables.'})
+            logger.warning('AI chat provider rejected configured credentials')
+            return JsonResponse({'reply': 'The AI assistant is currently unavailable. Please try again later.'})
         elif resp.status_code != 200:
             print(f"[AI Chat] Groq error {resp.status_code}: {resp.text[:200]}")
-            return JsonResponse({'reply': f'⚠️ AI service error (HTTP {resp.status_code}). Please try again.'})
+            return JsonResponse({'reply': 'The AI assistant is currently unavailable. Please try again later.'})
 
         data = resp.json()
         choices = data.get('choices', [])

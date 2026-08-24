@@ -15,11 +15,14 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Security ───────────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get('SECRET_KEY', '')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
+    # A fresh local checkout stays usable without shipping a known secret.
+    import secrets
     import warnings
-    warnings.warn("SECRET_KEY is not set in environment variables!", stacklevel=2)
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+    SECRET_KEY = secrets.token_urlsafe(50)
+    warnings.warn("SECRET_KEY is not set; using an ephemeral development key.", stacklevel=2)
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 # ── Proxy SSL & HTTPS Settings ─────────────────────────────────────────────
 # This fixes the 'Error 400: redirect_uri_mismatch' on Google Login 
@@ -192,7 +195,6 @@ ACCOUNT_SIGNUP_FIELDS             = ['email*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION        = 'none'
 ACCOUNT_UNIQUE_EMAIL              = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
-ACCOUNT_USERNAME_REQUIRED         = False
 SOCIALACCOUNT_ADAPTER             = 'core.adapters.MySocialAccountAdapter'
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -214,3 +216,10 @@ CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
 railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
 if railway_domain:
     CSRF_TRUSTED_ORIGINS.append(f'https://{railway_domain}')
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'

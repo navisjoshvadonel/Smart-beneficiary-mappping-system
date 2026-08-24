@@ -42,7 +42,7 @@ class GroqBotService:
         self._ensure_initialized()
 
         if not self.api_key:
-            return "⚠️ AI Chat is currently unavailable. GROQ_API_KEY is not configured."
+            return "The AI assistant is currently unavailable. Please use the verified scheme listings in the meantime."
 
         # Get or create conversation history for this user
         if user_id not in self.conversation_histories:
@@ -82,7 +82,7 @@ class GroqBotService:
             if resp.status_code == 429:
                 return "⏳ AI rate limit reached. Please wait a moment and try again."
             elif resp.status_code in (401, 403):
-                return "⚠️ Invalid GROQ_API_KEY. Please update it in Railway → Variables."
+                return "The AI assistant is currently unavailable. Please try again later."
             elif resp.status_code != 200:
                 print(f"[GroqBotService] API error {resp.status_code}: {resp.text[:200]}")
                 return f"⚠️ AI service error (HTTP {resp.status_code}). Please try again."
