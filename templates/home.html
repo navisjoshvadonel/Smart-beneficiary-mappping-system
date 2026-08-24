@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Beneficiary Mapping System | Smart Government Scheme Discovery</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Premium Global UI CSS -->
+    {% load static %}
+    <link href="{% static 'css/benefitbridge_premium.css' %}" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: var(--canvas);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Abstract Premium Background Elements */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: -2;
+            background-image:
+                linear-gradient(rgba(30, 58, 138, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 58, 138, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        
+        .glow-orb {
+            position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.15; z-index: -1;
+            pointer-events: none;
+        }
+        .orb1 { width: 600px; height: 600px; background: var(--primary); top: -200px; right: -200px; animation: float 10s ease-in-out infinite; }
+        .orb2 { width: 500px; height: 500px; background: var(--accent); bottom: -100px; left: -100px; animation: float 12s ease-in-out infinite reverse; }
+        
+        @keyframes float {
+            0%, {{ total_users }} { transform: translate(0, 0); }
+            50% { transform: translate(40px, 40px); }
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .nav-logo {
+            font-weight: 800; font-size: 1.25rem;
+            display: flex; align-items: center; gap: 0.75rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .logo-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(30,58,138,0.2);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 6rem 0 4rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(13, 148, 136, 0.1);
+            border: 1px solid rgba(13, 148, 136, 0.2);
+            border-radius: 100px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem; color: var(--accent-dark);
+            font-weight: 600;
+            margin-bottom: 2rem;
+            animation: fadeUp 0.6s ease both;
+        }
+        
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            animation: fadeUp 0.7s ease both 0.1s;
+        }
+        
+        .hero-title .highlight {
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero-title .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 10%;
+            left: 0;
+            width: {{ total_users }};
+            height: 30%;
+            background: rgba(30, 58, 138, 0.15);
+            z-index: -1;
+            transform: skew(-15deg);
+        }
+        
+        .hero-sub {
+            font-size: 1.2rem; 
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            animation: fadeUp 0.7s ease both 0.2s;
+        }
+        
+        .hero-cta {
+            display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-start;
+            animation: fadeUp 0.7s ease both 0.3s;
+        }
+        
+        /* Image presentation */
+        .hero-image-wrapper {
+            position: relative;
+            perspective: 1000px;
+            animation: fadeUp 0.8s ease both 0.3s;
+        }
+        .hero-image {
+            width: {{ total_users }};
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(30, 58, 138, 0.25);
+            border: 1px solid var(--border);
+            transform: rotateY(-5deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+        }
+        .hero-image-wrapper:hover .hero-image {
+            transform: rotateY(0deg) rotateX(0deg);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 991px) {
+            .hero { text-align: center; padding: 4rem 0; }
+            .hero-title .highlight::after { bottom: 5%; }
+            .hero-cta { justify-content: center; }
+            .stats-box { justify-content: center; text-align: center; }
+            .stat-item { text-align: center; }
+            .hero-image-wrapper { margin-top: 4rem; }
+            .hero-image { transform: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="glow-orb orb1"></div>
+    <div class="glow-orb orb2"></div>
+
+    <nav>
+        <div class="container d-flex align-items-center justify-content-between">
+            <a href="{% url 'home' %}" class="nav-logo">
+                <div class="logo-icon"><i class="bi bi-bank2"></i></div>
+                <span>Smart Beneficiary Mapping System</span>
+            </a>
+            <div class="d-flex gap-3 align-items-center">
+                <a href="{% url 'login' %}" class="text-decoration-none fw-semibold text-dark hover-primary d-none d-sm-block">Sign In</a>
+                <a href="{% url 'register' %}" class="bb-btn bb-btn-primary rounded-pill px-4">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 pe-lg-5">
+                <div class="hero-badge">
+                    <i class="bi bi-magic"></i> Smart Scheme Matching
+                </div>
+                
+                <h1 class="hero-title">
+                    Discover schemes <br>
+                    <span class="highlight">built for you</span>
+                </h1>
+                
+                <p class="hero-sub">
+                    India's premier AI-enabled beneficiary matching system. Enter your profile once and instantly discover every government scheme you qualify for — securely and effortlessly.
+                </p>
+                
+                <div class="hero-cta">
+                    <a href="{% url 'register' %}" class="bb-btn bb-btn-primary px-4 py-3 rounded-pill fs-6 d-flex align-items-center">
+                        Check My Eligibility <i class="bi bi-arrow-right ms-2 fs-5"></i>
+                    </a>
+                    <a href="{% url 'login' %}" class="bb-btn bb-btn-secondary px-4 py-3 rounded-pill fs-6 bg-white">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            
+            <div class="col-lg-6 mt-5 mt-lg-0">
+                <div class="hero-image-wrapper">
+                    <!-- Premium UI Mockup -->
+                    <div style="background:white; border-radius:24px; box-shadow:0 32px 64px -12px rgba(79,70,229,0.18), 0 0 0 1px #e2e8f0; overflow:hidden;">
+
+                        <!-- App Header Bar -->
+                        <div style="background:linear-gradient(135deg,#4F46E5 0%,#6366F1 100%); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
+                                    <i class="bi bi-bank2" style="color:white;font-size:1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="color:white;font-weight:700;font-size:0.9rem;line-height:1;">SBMS Portal</div>
+                                    <div style="color:rgba(255,255,255,0.7);font-size:0.7rem;">Smart Beneficiary Mapping</div>
+                                </div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.15);border-radius:20px;padding:0.3rem 0.75rem;display:flex;align-items:center;gap:0.4rem;">
+                                <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse-dot 1.5s infinite;"></span>
+                                <span style="color:white;font-size:0.75rem;font-weight:600;">AI Active</span>
+                            </div>
+                        </div>
+
+                        <!-- How it works steps -->
+                        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f1f5f9;">
+                            <div style="font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.85rem;">How It Works</div>
+                            <div style="display:flex; gap:0; align-items:flex-start;">
+                                <!-- Step 1 -->
+                                <div style="flex:1;text-align:center;">
+                                    <div style="width:38px;height:38px;border-radius:50%;background:#EEF2FF;border:2px solid #4F46E5;display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem;">
+                                        <i class="bi bi-person-fill" style="color:#4F46E5;font-size:1rem;"></i>
+                                    </div>
+                                    <div style="font-size:0.7rem;font-weight:600;color:#334155;">Enter Profile</div>
+                                </div>
+                                <!-- arrow -->
+                                <div style="flex:0;padding-top:1rem;color:#CBD5E1;font-size:1rem;">›</div>
+                                <!-- Step 2 -->
+                                <div style="flex:1;text-align:center;">
+                                    <div style="width:38px;height:38px;border-radius:50%;background:#F0FDF4;border:2px solid #22c55e;display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem;">
+                                        <i class="bi bi-cpu" style="color:#22c55e;font-size:1rem;"></i>
+                                    </div>
+                                    <div style="font-size:0.7rem;font-weight:600;color:#334155;">AI Analyses</div>
+                                </div>
+                                <!-- arrow -->
+                                <div style="flex:0;padding-top:1rem;color:#CBD5E1;font-size:1rem;">›</div>
+                                <!-- Step 3 -->
+                                <div style="flex:1;text-align:center;">
+                                    <div style="width:38px;height:38px;border-radius:50%;background:#FFF7ED;border:2px solid #f97316;display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem;">
+                                        <i class="bi bi-stars" style="color:#f97316;font-size:1rem;"></i>
+                                    </div>
+                                    <div style="font-size:0.7rem;font-weight:600;color:#334155;">Get Matched</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Matched Schemes -->
+                        <div style="padding:1.25rem 1.5rem;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;">
+                                <div style="font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Matched Schemes</div>
+                                <div style="background:#EEF2FF;color:#4F46E5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;">15 Found</div>
+                            </div>
+
+                            <!-- Scheme Card 1 -->
+                            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f8fafc;border-radius:12px;margin-bottom:0.6rem;border:1px solid #e2e8f0;">
+                                <div style="width:36px;height:36px;border-radius:10px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="bi bi-mortarboard-fill" style="color:#4F46E5;font-size:0.95rem;"></i>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:0.8rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">National Scholarship Portal</div>
+                                    <div style="height:4px;background:#e2e8f0;border-radius:4px;margin-top:5px;"><div style="width:98%;height:100%;background:linear-gradient(90deg,#4F46E5,#818CF8);border-radius:4px;"></div></div>
+                                </div>
+                                <span style="background:#dcfce7;color:#166534;font-size:0.65rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:20px;flex-shrink:0;">98%</span>
+                            </div>
+
+                            <!-- Scheme Card 2 -->
+                            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f8fafc;border-radius:12px;margin-bottom:0.6rem;border:1px solid #e2e8f0;">
+                                <div style="width:36px;height:36px;border-radius:10px;background:#FFF7ED;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="bi bi-house-fill" style="color:#f97316;font-size:0.95rem;"></i>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:0.8rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">PM Awas Yojana (Urban)</div>
+                                    <div style="height:4px;background:#e2e8f0;border-radius:4px;margin-top:5px;"><div style="width:85%;height:100%;background:linear-gradient(90deg,#f97316,#fb923c);border-radius:4px;"></div></div>
+                                </div>
+                                <span style="background:#fef3c7;color:#92400e;font-size:0.65rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:20px;flex-shrink:0;">85%</span>
+                            </div>
+
+                            <!-- Scheme Card 3 -->
+                            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
+                                <div style="width:36px;height:36px;border-radius:10px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="bi bi-heart-pulse-fill" style="color:#22c55e;font-size:0.95rem;"></i>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:0.8rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ayushman Bharat PM-JAY</div>
+                                    <div style="height:4px;background:#e2e8f0;border-radius:4px;margin-top:5px;"><div style="width:76%;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:4px;"></div></div>
+                                </div>
+                                <span style="background:#dcfce7;color:#166534;font-size:0.65rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:20px;flex-shrink:0;">76%</span>
+                            </div>
+                        </div>
+
+                        <!-- Footer Bar -->
+                        <div style="padding:0.9rem 1.5rem;border-top:1px solid #f1f5f9;background:#fafafa;display:flex;align-items:center;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <i class="bi bi-shield-fill-check" style="color:#4F46E5;font-size:0.9rem;"></i>
+                                <span style="font-size:0.72rem;font-weight:600;color:#64748b;">Aadhaar Verified &amp; Secure</span>
+                            </div>
+                            <div style="font-size:0.68rem;color:#94a3b8;font-weight:500;">Powered by Gemini AI ✨</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Footer -->
+    <footer style="background:#0F172A; padding:1.25rem 2rem;">
+        <div style="max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+                <div style="width:28px;height:28px;border-radius:7px;background:#4F46E5;display:flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-bank2" style="color:white;font-size:0.85rem;"></i>
+                </div>
+                <span style="color:#94a3b8; font-size:0.82rem; font-weight:600;">Smart Beneficiary Mapping System</span>
+            </div>
+            <div style="text-align:center;">
+                <span style="color:#64748b; font-size:0.78rem;">
+                    🏛️ Developed by &nbsp;<strong style="color:#818CF8; letter-spacing:0.05em;">MSEC</strong>
+                </span>
+            </div>
+            <div style="color:#475569; font-size:0.75rem;">
+                &copy; 2026 SBMS &nbsp;·&nbsp; All rights reserved
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

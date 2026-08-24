@@ -1,0 +1,1 @@
+web: python run_setup.py && python manage.py collectstatic --noinput && gunicorn beneficiary_system.wsgi:application --bind 0.0.0.0:$PORT

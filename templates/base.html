@@ -1,0 +1,702 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard — Smart Beneficiary Mapping System{% endblock %}</title>
+
+    <!-- Apply dark mode BEFORE render to prevent flash of white -->
+    <script>
+        if (localStorage.getItem('sbms-dark') === '1') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Premium CSS System -->
+    <link href="{% static 'css/benefitbridge_premium.css' %}" rel="stylesheet">
+
+    <!-- Dark Mode Inline Styles (inlined so always loads regardless of staticfiles) -->
+    <style>
+        /* ── Dark Mode Variables ── */
+        html.dark-mode {
+            --canvas: #0F172A !important;
+            --surface: #1E293B !important;
+            --text-main: #F1F5F9 !important;
+            --text-muted: #94A3B8 !important;
+            --text-light: #64748B !important;
+            --border: #334155 !important;
+            --primary-light: #1E1B4B !important;
+            --success-bg: #052E1C !important; --success-text: #6EE7B7 !important;
+            --warning-bg: #2D1A00 !important; --warning-text: #FCD34D !important;
+            --danger-bg: #2D0A0A !important;  --danger-text: #FCA5A5 !important;
+        }
+        html.dark-mode body {
+            background-color: #0F172A !important;
+            color: #F1F5F9 !important;
+        }
+        html.dark-mode .bb-sidebar     { background: #1E293B !important; border-color: #334155 !important; }
+        html.dark-mode .bb-navbar       { background: rgba(15,23,42,0.95) !important; border-color: #334155 !important; }
+        html.dark-mode .bb-card         { background: #1E293B !important; border-color: #334155 !important; }
+        html.dark-mode .bg-white        { background-color: #1E293B !important; }
+        html.dark-mode .bg-light        { background-color: #263044 !important; }
+        html.dark-mode .card            { background: #1E293B !important; border-color: #334155 !important; }
+        html.dark-mode .form-control,
+        html.dark-mode .form-select     { background: #1E293B !important; border-color: #334155 !important; color: #F1F5F9 !important; }
+        html.dark-mode .form-control::placeholder { color: #64748B !important; }
+        html.dark-mode .input-group-text{ background: #1E293B !important; border-color: #334155 !important; color: #94A3B8 !important; }
+        html.dark-mode .table           { color: #F1F5F9 !important; }
+        html.dark-mode .table-light th  { background: #263044 !important; color: #94A3B8 !important; }
+        html.dark-mode .table-hover tbody tr:hover { background: rgba(99,102,241,0.1) !important; }
+        html.dark-mode .border          { border-color: #334155 !important; }
+        html.dark-mode .border-top,
+        html.dark-mode .border-bottom   { border-color: #334155 !important; }
+        html.dark-mode .text-dark       { color: #F1F5F9 !important; }
+        html.dark-mode .text-muted      { color: #94A3B8 !important; }
+        html.dark-mode .fw-semibold[style*="#0F172A"],
+        html.dark-mode [style*="color: #0F172A"],
+        html.dark-mode [style*="color:#0F172A"] { color: #F1F5F9 !important; }
+        html.dark-mode .alert           { background: #1E293B !important; border-color: #334155 !important; }
+        html.dark-mode .bb-nav-item     { color: #94A3B8 !important; }
+        html.dark-mode .bb-nav-item:hover,
+        html.dark-mode .bb-nav-item.active { background: rgba(99,102,241,0.15) !important; color: #818CF8 !important; }
+        html.dark-mode .shadow-sm,
+        html.dark-mode .shadow,
+        html.dark-mode .shadow-lg       { box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
+        html.dark-mode .bb-stat-card    { background: #1E293B !important; }
+
+        /* Dark mode toggle */
+        .dark-toggle {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.55rem 0.75rem; border-radius: 10px;
+            cursor: pointer; user-select: none;
+            color: var(--text-muted); font-size: 0.85rem; font-weight: 600;
+            margin-bottom: 0.5rem; transition: background 0.2s;
+        }
+        .dark-toggle:hover { background: var(--primary-light); color: var(--primary); }
+        .dark-toggle-switch {
+            width: 40px; height: 22px; border-radius: 11px;
+            background: #CBD5E1; position: relative; transition: background 0.3s; flex-shrink:0;
+        }
+        .dark-toggle-switch::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: white; transition: transform 0.25s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+        }
+        html.dark-mode .dark-toggle-switch { background: #4F46E5; }
+        html.dark-mode .dark-toggle-switch::after { transform: translateX(18px); }
+        html.dark-mode .dark-toggle { color: #818CF8; }
+
+        /* Smooth fade between modes */
+        body, .bb-card, .bb-sidebar, .bb-navbar, .form-control, .form-select {
+            transition: background-color 0.25s ease, color 0.2s ease, border-color 0.2s ease !important;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Mobile Top Navbar -->
+    <nav class="bb-navbar">
+        <a href="{% url 'dashboard' %}" class="d-flex align-items-center text-decoration-none" style="gap: 0.6rem; color: #0F172A; font-weight: 700; font-size: 0.95rem;">
+            <div style="width:34px; height:34px; border-radius:8px; background: var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow: 0 2px 8px rgba(30,58,138,0.25);">
+                <i class="bi bi-bank2" style="font-size: 1.1rem; color: white;"></i>
+            </div>
+            <span style="line-height:1.2;">Smart Beneficiary<br><span style="font-size:0.75rem; font-weight:500; color:var(--text-light);">Mapping System</span></span>
+        </a>
+        <button id="bb-sidebar-toggle" class="bb-btn" style="padding: 0.5rem; color: var(--text-main); background: transparent; box-shadow: none;">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="bb-sidebar">
+        <div class="d-flex flex-column" style="padding: 1.5rem 1rem; flex: 1; overflow-y: auto;">
+            <!-- Logo -->
+            <a href="{% url 'dashboard' %}" class="d-flex align-items-center text-decoration-none mb-4" style="gap: 0.75rem; color: #0F172A; font-weight: 700; font-size: 1rem;">
+                <div style="width:42px; height:42px; border-radius:10px; background: var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow: 0 4px 12px rgba(30,58,138,0.3);">
+                    <i class="bi bi-bank2" style="font-size: 1.3rem; color: white;"></i>
+                </div>
+                <span style="line-height:1.25;">Smart Beneficiary<br><span style="font-size:0.75rem; font-weight:500; color:var(--text-light); letter-spacing:0.01em;">Mapping System</span></span>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="d-flex flex-column" style="gap: 0.25rem;">
+                {% if not request.user.is_superuser %}
+                <a href="{% url 'dashboard' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-grid-1x2"></i> Dashboard
+                </a>
+                <a href="{% url 'categories' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'categories' %}active{% endif %}">
+                    <i class="bi bi-search"></i> Search Schemes
+                </a>
+                <a href="{% url 'my_applications' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'my_applications' %}active{% endif %}">
+                    <i class="bi bi-file-earmark-check"></i> My Applications
+                </a>
+                <a href="{% url 'my_grievances' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'my_grievances' %}active{% endif %}">
+                    <i class="bi bi-exclamation-circle"></i> My Grievances
+                </a>
+                <a href="{% url 'edit_profile' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'edit_profile' %}active{% endif %}">
+                    <i class="bi bi-person-badge"></i> Edit Profile
+                </a>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                <div class="mt-3 mb-2 px-3 text-uppercase" style="font-size: 0.7rem; font-weight: 700; color: var(--text-light); letter-spacing: 0.05em;">Admin</div>
+                <a href="{% url 'admin_stats' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'admin_stats' %}active{% endif %}">
+                    <i class="bi bi-pie-chart"></i> Platform Stats
+                </a>
+                <a href="{% url 'admin_users' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+                    <i class="bi bi-people"></i> Manage Users
+                </a>
+                <a href="{% url 'admin_schemes' %}" class="bb-nav-item {% if 'scheme' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="bi bi-card-list"></i> Manage Schemes
+                </a>
+                <a href="{% url 'admin_grievances' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'admin_grievances' %}active{% endif %}">
+                    <i class="bi bi-inbox"></i> Manage Grievances
+                </a>
+                <a href="{% url 'admin_announcements' %}" class="bb-nav-item {% if request.resolver_match.url_name == 'admin_announcements' %}active{% endif %}">
+                    <i class="bi bi-megaphone"></i> Announcements
+                </a>
+                <a href="/admin/" class="bb-nav-item">
+                    <i class="bi bi-gear"></i> Django Admin
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <div class="mt-auto p-3 border-top" style="border-color: var(--border);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-light rounded-circle d-flex justify-content-center align-items-center fw-bold text-primary" style="width: 40px; height: 40px; border: 1px solid var(--border);">
+                    {{ user.full_name|default:request.user.username|slice:":1"|upper }}
+                </div>
+                <div style="overflow: hidden;">
+                    <div class="fw-semibold text-truncate" style="font-size: 0.875rem; color: #0F172A;">{{ user.full_name|default:request.user.username }}</div>
+                    <div class="text-truncate text-muted" style="font-size: 0.75rem;">{{ user.email|default:request.user.email }}</div>
+                </div>
+            </div>
+            <!-- Dark Mode Toggle -->
+            <div class="dark-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+                <span><i class="bi bi-moon-stars me-2"></i>Dark Mode</span>
+                <div class="dark-toggle-switch" id="darkToggleSwitch"></div>
+            </div>
+
+            <a href="{% url 'logout' %}" class="bb-nav-item text-danger mt-2" style="padding: 0.5rem; justify-content: center; background: var(--danger-bg); border-radius: var(--radius);">
+                <i class="bi bi-box-arrow-right"></i> Sign out
+            </a>
+
+            <!-- Developer Credit -->
+            <div class="text-center mt-3 pt-2" style="border-top: 1px solid var(--border);">
+                <span style="font-size: 0.68rem; color: var(--text-light); font-weight: 500; letter-spacing: 0.03em;">
+                    🏛️ Developed by <strong style="color: var(--text-muted);">MSEC</strong>
+                </span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="bb-main-content">
+        <!-- Flash Messages -->
+        <div class="container-fluid mb-3">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert" style="border-radius: var(--radius); border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        {% block content %}
+        {% endblock %}
+    </main>
+</div>
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sidebar toggle
+    document.getElementById('bb-sidebar-toggle')?.addEventListener('click', function() {
+        document.querySelector('.bb-sidebar').classList.toggle('active');
+        document.querySelector('.bb-sidebar-overlay').classList.toggle('active');
+    });
+    document.querySelector('.bb-sidebar-overlay')?.addEventListener('click', function() {
+        document.querySelector('.bb-sidebar').classList.remove('active');
+        this.classList.remove('active');
+    });
+
+    // ── Dark Mode ──────────────────────────────────────────────────────────
+    (function() {
+        const html = document.documentElement;
+        const DARK_KEY = 'sbms-dark';
+
+        function applyDark(on) {
+            html.classList.toggle('dark-mode', on);
+            localStorage.setItem(DARK_KEY, on ? '1' : '0');
+        }
+
+        // Restore on load (already applied in <head>, but sync the switch UI)
+        const isDark = localStorage.getItem(DARK_KEY) === '1';
+        applyDark(isDark);
+
+        // Toggle button
+        const toggle = document.getElementById('darkModeToggle');
+        if (toggle) {
+            toggle.addEventListener('click', function() {
+                applyDark(!html.classList.contains('dark-mode'));
+            });
+        }
+    })();
+</script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- ============================================================
+     SBMS AI CHATBOT WIDGET — Animated + Voice NLP
+     ============================================================ -->
+{% if request.user.is_authenticated %}
+<div id="sbms-chat-widget" style="position:fixed;bottom:24px;right:24px;z-index:99999;font-family:'Inter',sans-serif;">
+
+  <!-- ── Pulse ring behind the toggle button ── -->
+  <div id="chat-pulse" style="
+    position:absolute;bottom:0;right:0;
+    width:64px;height:64px;border-radius:50%;
+    background:rgba(99,102,241,0.35);
+    animation:chatPulse 2s ease-out infinite;
+    pointer-events:none;
+    z-index:99998;
+  "></div>
+
+  <!-- ── Toggle Button ── -->
+  <button id="chat-toggle-btn" onclick="toggleChat()" aria-label="Open AI Assistant" style="
+    position:relative;
+    width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,#4f46e5,#06b6d4);
+    box-shadow:0 8px 32px rgba(99,102,241,0.5);
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    overflow:hidden;
+    z-index:99999;
+    visibility:visible !important;
+    opacity:1 !important;
+  ">
+    <!-- Robot face (open state) -->
+    <svg id="icon-robot" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="transition:opacity 0.2s,transform 0.3s;">
+      <!-- Antenna -->
+      <line x1="16" y1="4" x2="16" y2="8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="16" cy="3" r="2" fill="#06b6d4"/>
+      <!-- Head -->
+      <rect x="6" y="8" width="20" height="16" rx="4" fill="white" fill-opacity="0.95"/>
+      <!-- Eyes -->
+      <circle id="eye-left" cx="11" cy="15" r="2.5" fill="#4f46e5"/>
+      <circle id="eye-right" cx="21" cy="15" r="2.5" fill="#4f46e5"/>
+      <!-- Eye shine -->
+      <circle cx="12" cy="14" r="0.8" fill="white"/>
+      <circle cx="22" cy="14" r="0.8" fill="white"/>
+      <!-- Mouth -->
+      <path id="bot-mouth" d="M11 20 Q16 23 21 20" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <!-- Ears -->
+      <rect x="3" y="12" width="3" height="6" rx="1.5" fill="white" fill-opacity="0.9"/>
+      <rect x="26" y="12" width="3" height="6" rx="1.5" fill="white" fill-opacity="0.9"/>
+    </svg>
+    <!-- Close X (close state, hidden initially) -->
+    <svg id="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" style="position:absolute;opacity:0;transform:rotate(-90deg);transition:opacity 0.2s,transform 0.3s;">
+      <path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <!-- ── Chat Panel ── -->
+  <div id="chat-panel" style="
+    position:absolute;bottom:80px;right:0;
+    width:360px;height:520px;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(99,102,241,0.2);
+    display:flex;flex-direction:column;overflow:hidden;
+    opacity:0;transform:translateY(20px) scale(0.95);
+    pointer-events:none;
+    transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1),transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  ">
+
+    <!-- Header -->
+    <div style="
+      padding:14px 16px;
+      background:linear-gradient(135deg,rgba(79,70,229,0.3),rgba(6,182,212,0.15));
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex;align-items:center;gap:12px;
+    ">
+      <!-- Animated bot avatar in header -->
+      <div id="header-avatar" style="
+        width:38px;height:38px;border-radius:50%;flex-shrink:0;
+        background:linear-gradient(135deg,#4f46e5,#06b6d4);
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 0 12px rgba(99,102,241,0.5);
+      ">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+          <circle cx="11" cy="15" r="2.5" fill="white"/>
+          <circle cx="21" cy="15" r="2.5" fill="white"/>
+          <path d="M11 20 Q16 23 21 20" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <rect x="6" y="8" width="20" height="16" rx="4" fill="white" fill-opacity="0.2"/>
+        </svg>
+      </div>
+      <div style="flex:1;">
+        <div style="color:white;font-weight:700;font-size:0.88rem;letter-spacing:0.02em;">✨ SBMS Assistant</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+          <div id="status-dot" style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:statusPulse 2s ease-in-out infinite;"></div>
+          <span style="color:#10b981;font-size:0.72rem;font-weight:600;">Online & Ready to Help</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="clearChatHistory()" title="Clear Chat" style="
+          width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);
+          background:rgba(255,255,255,0.08);color:#a5b4fc;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;font-size:0.8rem;
+          transition:all 0.2s;
+        ">🗑</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages" style="
+      flex:1;overflow-y:auto;padding:16px;
+      display:flex;flex-direction:column;gap:12px;
+      scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;
+    ">
+      <!-- Welcome message -->
+      <div class="bot-msg" style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#06b6d4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">🤖</div>
+        <div style="
+          background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+          border-radius:16px;border-top-left-radius:4px;
+          padding:10px 14px;color:#e2e8f0;font-size:0.82rem;line-height:1.5;max-width:80%;
+        ">
+          👋 <strong>Welcome!</strong> I'm your SBMS AI Assistant.<br><br>
+          I can help you:<br>
+          • Find schemes you're eligible for<br>
+          • Guide you through applications<br>
+          • Answer scheme-related questions<br><br>
+          How can I help you today?
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing indicator (hidden) -->
+    <div id="typing-indicator" style="display:none;padding:0 16px 8px;gap:8px;align-items:center;" class="bot-msg">
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#06b6d4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">🤖</div>
+      <div style="
+        background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+        border-radius:16px;border-top-left-radius:4px;padding:10px 14px;
+        display:flex;gap:5px;align-items:center;
+      ">
+        <div style="width:7px;height:7px;border-radius:50%;background:#06b6d4;animation:typingDot 1s ease-in-out infinite 0s;"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:#06b6d4;animation:typingDot 1s ease-in-out infinite 0.2s;"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:#06b6d4;animation:typingDot 1s ease-in-out infinite 0.4s;"></div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div id="text-input-area" style="
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,0.08);
+      background:rgba(15,23,42,0.8);
+      display:flex;gap:8px;align-items:center;
+    ">
+      <input
+        type="text"
+        id="chat-input"
+        placeholder="Ask me anything..."
+        onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendChatMessage(); }"
+        style="
+          flex:1;background:rgba(255,255,255,0.05);
+          border:1px solid rgba(255,255,255,0.12);border-radius:20px;
+          padding:8px 14px;color:#e2e8f0;font-size:0.82rem;outline:none;
+          transition:border-color 0.2s;
+        "
+        onfocus="this.style.borderColor='rgba(99,102,241,0.6)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.12)'"
+      />
+      <button
+        id="mic-btn"
+        onclick="startInlineVoice()"
+        title="Voice Input"
+        style="
+          width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);
+          background:rgba(255,255,255,0.05);color:#94a3b8;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;
+          transition:all 0.2s;flex-shrink:0;font-size:1rem;
+        "
+        onmouseover="this.style.background='rgba(99,102,241,0.2)';this.style.color='#a5b4fc'"
+        onmouseout="if(!window._micActive){this.style.background='rgba(255,255,255,0.05)';this.style.color='#94a3b8'}"
+      >🎤</button>
+      <button
+        onclick="sendChatMessage()"
+        id="send-btn"
+        style="
+          width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
+          background:linear-gradient(135deg,#4f46e5,#06b6d4);
+          color:white;font-size:0.85rem;
+          display:flex;align-items:center;justify-content:center;
+          transition:transform 0.2s,box-shadow 0.2s;flex-shrink:0;
+          box-shadow:0 4px 12px rgba(99,102,241,0.4);
+        "
+        onmouseover="this.style.transform='scale(1.1)'"
+        onmouseout="this.style.transform='scale(1)'"
+      >➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Chatbot Styles ── -->
+<style>
+@keyframes chatPulse {
+  0%   { transform:scale(1);   opacity:0.8; }
+  70%  { transform:scale(1.8); opacity:0;   }
+  100% { transform:scale(1.8); opacity:0;   }
+}
+@keyframes statusPulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.3; }
+}
+@keyframes typingDot {
+  0%,100% { transform:translateY(0);   opacity:0.4; }
+  50%      { transform:translateY(-5px);opacity:1;   }
+}
+@keyframes msgSlideIn {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0);   }
+}
+@keyframes eyeBlink {
+  0%,90%,100% { transform:scaleY(1); }
+  95%          { transform:scaleY(0.1); }
+}
+#eye-left, #eye-right {
+  animation: eyeBlink 4s ease-in-out infinite;
+  transform-origin: center;
+}
+</style>
+
+<!-- ── Chatbot JavaScript ── -->
+<script>
+(function() {
+  let isChatOpen = false;
+  let _recognition = null;
+  window._micActive = false;
+
+  const CSRF_TOKEN = '{{ csrf_token }}';
+
+  window.toggleChat = function() {
+    isChatOpen = !isChatOpen;
+    const panel = document.getElementById('chat-panel');
+    const iconRobot = document.getElementById('icon-robot');
+    const iconClose = document.getElementById('icon-close');
+    const pulse = document.getElementById('chat-pulse');
+    const btn = document.getElementById('chat-toggle-btn');
+
+    if (isChatOpen) {
+      panel.style.opacity = '1';
+      panel.style.transform = 'translateY(0) scale(1)';
+      panel.style.pointerEvents = 'auto';
+      iconRobot.style.opacity = '0';
+      iconRobot.style.transform = 'rotate(90deg)';
+      iconClose.style.opacity = '1';
+      iconClose.style.transform = 'rotate(0deg)';
+      pulse.style.animationPlayState = 'paused';
+      pulse.style.opacity = '0';
+      btn.style.transform = 'scale(1.05)';
+      setTimeout(() => {
+        const input = document.getElementById('chat-input');
+        if (input) input.focus();
+        scrollToBottom();
+      }, 300);
+    } else {
+      panel.style.opacity = '0';
+      panel.style.transform = 'translateY(20px) scale(0.95)';
+      panel.style.pointerEvents = 'none';
+      iconRobot.style.opacity = '1';
+      iconRobot.style.transform = 'rotate(0deg)';
+      iconClose.style.opacity = '0';
+      iconClose.style.transform = 'rotate(-90deg)';
+      pulse.style.animationPlayState = 'running';
+      pulse.style.opacity = '1';
+      btn.style.transform = 'scale(1)';
+    }
+  };
+
+  window.sendChatMessage = async function() {
+    const input = document.getElementById('chat-input');
+    const msg = (input ? input.value : '').trim();
+    if (!msg) return;
+    if (input) input.value = '';
+
+    appendMessage('user', msg);
+    showTyping(true);
+
+    try {
+      const res = await fetch('/api/ai/chat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRF_TOKEN,
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ message: msg }),
+      });
+      const data = await res.json();
+      showTyping(false);
+      if (data.error && !data.reply) {
+        appendMessage('bot', `⚠️ ${data.error}`);
+      } else {
+        appendMessage('bot', data.reply || "I couldn't understand that. Please try again.");
+      }
+    } catch (err) {
+      showTyping(false);
+      console.error('[SBMS Chat]', err);
+      appendMessage('bot', '⚠️ Connection error. Please check your internet and try again.');
+    }
+  };
+
+  window.startInlineVoice = function() {
+    const micBtn = document.getElementById('mic-btn');
+    const input  = document.getElementById('chat-input');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      appendMessage('bot', '⚠️ Voice input is not supported in your browser. Please use Chrome or Edge.');
+      return;
+    }
+
+    // If already recording, stop it
+    if (window._micActive && _recognition) {
+      _recognition.stop();
+      return;
+    }
+
+    _recognition = new SpeechRecognition();
+    _recognition.lang = 'en-IN';
+    _recognition.continuous = false;
+    _recognition.interimResults = false;
+    _recognition.maxAlternatives = 1;
+
+    // Visual: mic button turns red/active
+    window._micActive = true;
+    micBtn.style.background = 'rgba(239,68,68,0.3)';
+    micBtn.style.color = '#ef4444';
+    micBtn.style.borderColor = 'rgba(239,68,68,0.5)';
+    micBtn.innerHTML = '⏹';
+    micBtn.title = 'Stop recording';
+
+    _recognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      if (input) {
+        input.value = transcript;
+        input.focus();
+        // Auto-send after a short delay so user can see the text
+        setTimeout(() => {
+          sendChatMessage();
+        }, 600);
+      }
+    };
+
+    _recognition.onend = function() {
+      window._micActive = false;
+      micBtn.style.background = 'rgba(255,255,255,0.05)';
+      micBtn.style.color = '#94a3b8';
+      micBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+      micBtn.innerHTML = '🎤';
+      micBtn.title = 'Voice Input';
+    };
+
+    _recognition.onerror = function(e) {
+      window._micActive = false;
+      micBtn.style.background = 'rgba(255,255,255,0.05)';
+      micBtn.style.color = '#94a3b8';
+      micBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+      micBtn.innerHTML = '🎤';
+      micBtn.title = 'Voice Input';
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        appendMessage('bot', `⚠️ Mic error: ${e.error}. Please try again.`);
+      }
+    };
+
+    _recognition.start();
+  };
+
+  window.clearChatHistory = async function() {
+    try {
+      await fetch('/api/clear-chat/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN },
+        credentials: 'same-origin',
+      });
+    } catch(e) {}
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = `
+      <div class="bot-msg" style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#06b6d4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">🤖</div>
+        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:16px;border-top-left-radius:4px;padding:10px 14px;color:#e2e8f0;font-size:0.82rem;line-height:1.5;max-width:80%;">
+          Chat history cleared. How can I help you?
+        </div>
+      </div>`;
+  };
+
+  function appendMessage(sender, text) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.style.cssText = `display:flex;gap:8px;align-items:flex-start;animation:msgSlideIn 0.3s ease-out;`;
+
+    // Parse basic markdown
+    const html = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>')
+      .replace(/• /g, '&bull; ');
+
+    if (sender === 'bot') {
+      div.innerHTML = `
+        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#06b6d4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">🤖</div>
+        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:16px;border-top-left-radius:4px;padding:10px 14px;color:#e2e8f0;font-size:0.82rem;line-height:1.5;max-width:80%;">${html}</div>`;
+    } else {
+      div.style.justifyContent = 'flex-end';
+      div.innerHTML = `
+        <div style="background:linear-gradient(135deg,#4f46e5,#4338ca);border-radius:16px;border-top-right-radius:4px;padding:10px 14px;color:white;font-size:0.82rem;line-height:1.5;max-width:80%;box-shadow:0 4px 12px rgba(79,70,229,0.3);">${html}</div>`;
+    }
+
+    container.appendChild(div);
+    scrollToBottom();
+  }
+
+  function showTyping(show) {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.style.display = show ? 'flex' : 'none';
+    if (show) scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    const container = document.getElementById('chat-messages');
+    if (container) container.scrollTop = container.scrollHeight;
+  }
+})();
+</script>
+{% endif %}
+<!-- ── End Chatbot Widget ── -->
+</body>
+</html>

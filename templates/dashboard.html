@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if announcement %}
+<div class="alert alert-info border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" style="background-color: var(--primary); color: white;">
+    <i class="bi bi-megaphone-fill fs-5"></i>
+    <div style="font-weight: 500;">
+        {{ announcement.message }}
+    </div>
+</div>
+{% endif %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="h3 fw-bold mb-1" style="color: #0F172A;">Hello, {{ user.name|default:request.user.get_full_name|default:request.user.username|truncatechars:20 }} 👋</h1>
+        <p class="text-muted mb-0">Here's your benefit eligibility overview</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form method="POST" action="{% url 'recheck_eligibility' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="bb-btn bb-btn-secondary">
+                <i class="bi bi-arrow-repeat"></i> Re-check Eligibility
+            </button>
+        </form>
+        <a href="{% url 'categories' %}" class="bb-btn bb-btn-primary">
+            <i class="bi bi-search"></i> Search Schemes
+        </a>
+    </div>
+</div>
+
+<!-- Stats Indicators -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="bb-card bb-stat-card bb-hover-lift">
+            <div class="bb-stat-icon success"><i class="bi bi-patch-check-fill"></i></div>
+            <div>
+                <div class="fs-4 fw-bold" style="color: #0F172A; line-height: 1.2;">{{ total_eligible }}</div>
+                <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Eligible</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="bb-card bb-stat-card bb-hover-lift">
+            <div class="bb-stat-icon primary"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+            <div>
+                <div class="fs-4 fw-bold" style="color: #0F172A; line-height: 1.2;">{{ total_categories }}</div>
+                <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Categories</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="bb-card bb-stat-card bb-hover-lift">
+            <div class="bb-stat-icon accent"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div>
+                <div class="fs-4 fw-bold" style="color: #0F172A; line-height: 1.2;">{{ applications|length }}</div>
+                <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Applications</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="bb-card bb-stat-card bb-hover-lift">
+            <div class="bb-stat-icon warning"><i class="bi bi-exclamation-circle-fill"></i></div>
+            <div>
+                <div class="fs-4 fw-bold" style="color: #0F172A; line-height: 1.2;">{{ grievances|length }}</div>
+                <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Grievances</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Split Layout -->
+<div class="row g-4">
+    <!-- Left Column: Search & Schemes -->
+    <div class="col-lg-8">
+        
+        <!-- Filter Bar -->
+        <div class="bb-card mb-4 p-3 border border-1 border-primary bg-light" style="border-radius: var(--radius-md);">
+            <form method="GET" action="{% url 'dashboard' %}" class="d-flex flex-wrap gap-2 align-items-center m-0">
+                <div class="input-group" style="flex: 1; min-width: 200px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0 shadow-none" value="{{ search_q }}" placeholder="Search eligible schemes..." style="height: 48px;">
+                </div>
+                
+                <select name="state" class="form-select w-auto" style="min-width: 130px; border-color: var(--border);">
+                    <option value="">All States</option>
+                    {% for s in states %}
+                    <option value="{{ s }}" {% if filter_state == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="type" class="form-select w-auto" style="min-width: 130px; border-color: var(--border);">
+                    <option value="">All Types</option>
+                    {% for t in benefit_types %}
+                    <option value="{{ t }}" {% if filter_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="bb-btn bb-btn-primary ms-auto">Filter</button>
+                {% if search_q or filter_state or filter_type %}
+                <a href="{% url 'dashboard' %}" class="bb-btn bb-btn-secondary"><i class="bi bi-x-lg"></i></a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Eligible Schemes Header -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="fw-bold m-0" style="color: #0F172A;"><i class="bi bi-patch-check-fill text-success me-2"></i>Eligible Schemes</h5>
+            <span class="bb-badge bb-badge-primary">{{ eligible_schemes|length }} Matches</span>
+        </div>
+
+        {% if eligible_schemes %}
+        <div class="row g-3">
+            {% for item in eligible_schemes %}
+            <div class="col-md-6">
+                <div class="bb-card bb-scheme-card bb-hover-lift position-relative p-4" style="border: 1px solid #A7F3D0;">
+                    <span class="bb-match-badge">{{ item.score }}% match</span>
+                    <div class="mb-2">
+                        <span class="bb-badge bb-badge-success mb-2"><i class="bi bi-check-circle-fill"></i> Eligible</span>
+                    </div>
+                    <div class="scheme-title text-truncate" style="padding-right: 50px;" title="{{ item.eligibility.scheme.scheme_name }}">{{ item.eligibility.scheme.scheme_name }}</div>
+                    
+                    <div class="d-flex gap-2 flex-wrap mb-3 mt-1">
+                        {% if item.eligibility.scheme.state %}<span class="bb-tag">{{ item.eligibility.scheme.state }}</span>{% endif %}
+                        {% if item.eligibility.scheme.benefit_type %}<span class="bb-tag"><i class="bi bi-lightning-charge text-warning"></i> {{ item.eligibility.scheme.benefit_type }}</span>{% endif %}
+                    </div>
+                    
+                    <p class="scheme-desc mb-3">{{ item.eligibility.scheme.description }}</p>
+                    
+                    {% if item.eligibility.reason %}
+                    <div class="p-2 mb-3 bg-light rounded text-muted" style="font-size: 0.75rem;">
+                        <i class="bi bi-info-circle me-1"></i> {{ item.eligibility.reason }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-auto pt-2 border-top">
+                        <a href="{% url 'scheme_apply_guide' item.eligibility.scheme.scheme_id %}" class="bb-btn bb-btn-success w-100">
+                            Apply Now <i class="bi bi-arrow-right-short fs-5"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bb-card text-center p-5 bg-light border-dashed">
+            <i class="bi bi-inbox text-muted display-4 mb-3"></i>
+            <h6 class="fw-bold">No eligible schemes found</h6>
+            <p class="text-muted small mb-3">Adjust your filters or complete more profiling.</p>
+            <a href="{% url 'categories' %}" class="bb-btn bb-btn-primary">Search Categories</a>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Right Column: Timeline & Trackers -->
+    <div class="col-lg-4">
+        
+        <!-- Applications Widget -->
+        <div class="bb-card mb-4 p-0 overflow-hidden">
+            <div class="p-4 border-bottom d-flex align-items-center justify-content-between bg-light">
+                <h6 class="fw-bold m-0"><i class="bi bi-file-earmark-check-fill text-primary me-2"></i>Applications</h6>
+                <a href="{% url 'my_applications' %}" class="text-decoration-none" style="font-size: 0.8rem; font-weight: 600;">View All</a>
+            </div>
+            <div class="p-0">
+                {% if applications %}
+                <ul class="list-group list-group-flush m-0">
+                    {% for app in applications|slice:":4" %}
+                    <li class="list-group-item p-3 border-0 border-bottom d-flex align-items-center justify-content-between gap-2">
+                        <div class="w-75">
+                            <div class="fw-semibold text-truncate" style="font-size: 0.85rem;" title="{{ app.scheme.scheme_name }}">{{ app.scheme.scheme_name }}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ app.applied_on|date:"d M Y" }}</div>
+                        </div>
+                        <div>
+                            {% if app.status == 'Approved' %}<span class="bb-badge bb-badge-success">{{ app.status }}</span>
+                            {% elif app.status == 'Rejected' %}<span class="bb-badge bb-badge-danger">{{ app.status }}</span>
+                            {% elif app.status == 'Pending' %}<span class="bb-badge bb-badge-warning">{{ app.status }}</span>
+                            {% else %}<span class="bb-badge bb-badge-primary">{{ app.status }}</span>{% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="p-4 text-center text-muted small">
+                    No active applications.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Past Searches Widget -->
+        <div class="bb-card p-0 overflow-hidden">
+            <div class="p-4 border-bottom d-flex align-items-center justify-content-between bg-light">
+                <h6 class="fw-bold m-0"><i class="bi bi-clock-history text-accent me-2"></i>Past Searches</h6>
+                {% if past_categories %}
+                <form method="POST" action="{% url 'delete_search_all' %}" id="clearAllForm" class="m-0">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-link text-danger p-0 text-decoration-none shadow-none" style="font-size: 0.8rem; font-weight: 600;" data-bs-toggle="modal" data-bs-target="#clearAllModal">Clear</button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="p-3">
+                {% if past_categories %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for uc in past_categories %}
+                    <div class="bb-tag d-flex align-items-center gap-2">
+                        {{ uc.category.category_name }}
+                        <form method="POST" action="{% url 'delete_search' uc.user_cat_id %}" class="m-0 d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-close ms-1" style="font-size: 0.5rem;"></button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted small py-3">
+                    No past searches.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Clear All Modal -->
+<div class="modal fade" id="clearAllModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-body p-4 text-center">
+                <div class="fs-1 text-danger mb-3"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <h6 class="fw-bold text-dark mb-2">Clear History?</h6>
+                <p class="text-muted small mb-4">Clearing past searches will also remove your associated eligibility records forever.</p>
+                <div class="d-flex gap-2">
+                    <button class="bb-btn bb-btn-secondary w-50" data-bs-dismiss="modal">Cancel</button>
+                    <button class="bb-btn bb-btn-primary bg-danger border-danger w-50" onclick="document.getElementById('clearAllForm').submit();">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

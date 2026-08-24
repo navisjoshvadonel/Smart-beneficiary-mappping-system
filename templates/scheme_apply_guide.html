@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apply — {{ scheme.scheme_name }} | Smart Beneficiary Mapping System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-11">
+        
+        <div class="mb-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-link text-decoration-none p-0 mb-3 text-muted fw-semibold" style="font-size: 0.85rem;">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div class="bb-card mb-4 pe-4 d-flex align-items-center gap-3 py-3 px-4 shadow-sm {% if 'success' in message.tags %}bg-success text-white border-0{% elif 'error' in message.tags %}bg-danger text-white border-0{% else %}bg-primary text-white border-0{% endif %}">
+                    <i class="bi fs-4 {% if 'success' in message.tags %}bi-check-circle-fill{% elif 'error' in message.tags %}bi-x-circle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+                    <div class="fw-semibold">{{ message }}</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Scheme Header Hero -->
+        <div class="bb-card bg-primary text-white border-0 shadow-sm p-4 p-md-5 mb-5 position-relative overflow-hidden">
+            <div class="position-absolute top-0 end-0 h-100 w-50" style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05)); pointer-events: none;"></div>
+            
+            <div class="position-relative" style="z-index: 1;">
+                <span class="bb-badge bg-success text-white border-0 py-2 px-3 mb-4 shadow-sm fw-bold">
+                    <i class="bi bi-check-circle-fill me-1"></i> You are Eligible
+                </span>
+                
+                <h1 class="h2 fw-bold mb-3" style="font-family: 'Sora', sans-serif;">{{ scheme.scheme_name }}</h1>
+                <p class="text-white-50 mb-4 fs-6" style="max-width: 800px; line-height: 1.6;">{{ scheme.description }}</p>
+                
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% if scheme.state %}
+                    <span class="bb-badge bg-white text-dark shadow-sm border-0"><i class="bi bi-geo-alt-fill text-muted me-1"></i> {{ scheme.state }}</span>
+                    {% endif %}
+                    {% if scheme.benefit_type %}
+                    <span class="bb-badge bg-white text-primary shadow-sm border-0"><i class="bi bi-tag-fill me-1"></i> {{ scheme.benefit_type }}</span>
+                    {% endif %}
+                    <span class="bb-badge bg-white text-muted shadow-sm border-0"><i class="bi bi-bank2 me-1"></i> Government Scheme</span>
+                </div>
+                
+                {% if scheme.benefits %}
+                <div class="p-3 bg-white bg-opacity-10 rounded-3 border border-white border-opacity-25 mt-2" style="max-width: 600px;">
+                    <div class="small fw-bold text-uppercase text-white-50 mb-1" style="letter-spacing: 0.05em;"><i class="bi bi-gift-fill me-1"></i> What You Get</div>
+                    <div class="fw-bold fs-5">{{ scheme.benefits }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- Left Guide -->
+            <div class="col-lg-7">
+                <div class="bb-card h-100 p-0 overflow-hidden">
+                    <div class="bg-light p-3 px-4 border-bottom d-flex align-items-center">
+                        <i class="bi bi-list-ol text-primary me-2"></i>
+                        <h6 class="fw-bold text-uppercase text-muted m-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">How to Apply — Step by Step</h6>
+                    </div>
+                    
+                    <div class="p-4 px-md-5">
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">1</div>
+                            <div class="text-muted"><strong class="text-dark">Copy your details</strong> from the panel on the right. Keep this tab open — you'll need them to fill the form.</div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">2</div>
+                            <div class="text-muted">Click <strong class="text-dark">"Confirm & Submit Application"</strong> below to register your intent on Smart Beneficiary Mapping System.</div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">3</div>
+                            <div class="text-muted">Click <strong class="text-dark">"Go to Official Portal"</strong> to open the government website in a new tab.</div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">4</div>
+                            <div class="text-muted"><strong class="text-dark">Register / Log in</strong> on the portal using your Aadhaar number or mobile linked to Aadhaar.</div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">5</div>
+                            <div class="text-muted">Fill in your <strong class="text-dark">personal details</strong> (name, DOB, Aadhaar, income, address) using the data from the right panel.</div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">6</div>
+                            <div class="text-muted"><strong class="text-dark">Upload documents</strong> — typically: Aadhaar, income certificate, bank passbook, and a passport photo.</div>
+                        </div>
+                        <div class="d-flex mb-4">
+                            <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px;">7</div>
+                            <div class="text-muted"><strong class="text-dark">Submit</strong> on the portal and note your government reference number.</div>
+                        </div>
+                        
+                        <div class="bg-warning bg-opacity-10 border border-warning border-opacity-50 rounded-3 p-3 mt-4 d-flex gap-3 align-items-start">
+                            <i class="bi bi-info-circle-fill text-warning mt-1"></i>
+                            <div class="small fw-semibold text-dark text-opacity-75">
+                                Government portals may ask you to verify via OTP sent to your Aadhaar-linked mobile number. Keep your phone nearby.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Details -->
+            <div class="col-lg-5">
+                <div class="bb-card h-100 p-0 overflow-hidden d-flex flex-column">
+                    <div class="bg-primary text-white p-3 px-4 d-flex align-items-center">
+                        <i class="bi bi-person-vcard text-white-50 me-2"></i>
+                        <h6 class="fw-bold text-uppercase text-white m-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">Your Details — Ready to Fill</h6>
+                    </div>
+                    
+                    <div class="p-4 flex-grow-1 d-flex flex-column bg-light bg-opacity-50">
+                        <ul class="list-group list-group-flush bg-transparent gap-1 mb-4">
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Full Name</span>
+                                <span class="fw-bold text-dark" id="val-name">{{ user.name }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Date of Birth</span>
+                                <span class="fw-bold text-dark">{{ user.dob|date:"d/m/Y" }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Gender</span>
+                                <span class="fw-bold text-dark">{{ user.gender|default:"—" }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Email</span>
+                                <span class="fw-bold text-dark">{{ user.email|default:"—" }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Phone</span>
+                                <span class="fw-bold text-dark">{{ user.phone|default:"—" }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Aadhaar No.</span>
+                                <span class="font-monospace fw-bold text-primary" id="val-aadhaar">{{ user.aadhaar_no }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Address</span>
+                                <span class="fw-bold text-dark text-end" style="max-width: 60%;">{{ user.address|default:"—" }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Annual Income</span>
+                                <span class="fw-bold text-dark">{% if user.income %}₹{{ user.income|floatformat:0 }}{% else %}—{% endif %}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2">
+                                <span class="text-muted small fw-semibold">Occupation</span>
+                                <span class="fw-bold text-dark">{{ user.occupation|default:"—" }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center border-bottom border-black border-opacity-10 px-0 py-2 border-0">
+                                <span class="text-muted small fw-semibold">Education</span>
+                                <span class="fw-bold text-dark">{{ user.education|default:"—" }}</span>
+                            </li>
+                        </ul>
+                        
+                        <div class="mt-auto">
+                            <button class="bb-btn bb-btn-secondary w-100 mb-3" id="copyAllBtn" onclick="copyAllDetails()">
+                                <i class="bi bi-clipboard mt-1"></i> Copy All Details
+                            </button>
+                            <!-- Document Checklist Button -->
+                            <button class="bb-btn w-100 mb-2" id="checklistBtn"
+                                onclick="loadChecklist({{ scheme.scheme_id }})"
+                                style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border:none;">
+                                <i class="bi bi-list-check me-1"></i> ✨ AI Document Checklist
+                            </button>
+                            <div class="text-center small text-muted"><i class="bi bi-shield-check text-success me-1"></i> Your data is shown only here for manual copy-pasting.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submission Flow -->
+        <div class="bb-card p-0 overflow-hidden mb-5 border-2 border-primary border-opacity-25">
+            <div class="bg-primary bg-opacity-10 p-4 border-bottom border-primary border-opacity-25 d-flex align-items-center">
+                <i class="bi bi-send-check-fill text-primary fs-3 me-3"></i>
+                <h4 class="fw-bold text-dark m-0">Submit Application on Smart Beneficiary Mapping System</h4>
+            </div>
+            
+            <div class="p-4 p-md-5">
+                {% if existing_app %}
+                    <!-- Already applied -->
+                    <div class="bg-success bg-opacity-10 border border-success p-4 rounded-4 d-flex align-items-center gap-3 mb-4">
+                        <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Application Already Submitted</h5>
+                            <div class="text-muted small">
+                                REF: <strong class="font-monospace text-dark">BB-{{ existing_app.app_id }}</strong> | 
+                                Status: <strong class="text-success">{{ existing_app.status }}</strong> | 
+                                Applied: {{ existing_app.applied_on|date:"d M Y" }}
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="{% url 'my_applications' %}" class="bb-btn bb-btn-success px-4">
+                                Tracker <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Step 1: Pre-requisite checklist -->
+                    <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.05em;">Prerequisites Complete</h6>
+                    <div class="row g-3 mb-4 border-bottom pb-4">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-3 bg-light rounded-3 border">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <span class="fw-semibold text-dark small">Identity Verified</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-3 bg-light rounded-3 border">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <span class="fw-semibold text-dark small">Eligibility Confirmed</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center gap-2 p-3 bg-light rounded-3 border">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <span class="fw-semibold text-dark small">Data Ready</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Submit button -->
+                    <form method="POST" action="{% url 'apply_scheme' scheme.scheme_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bb-btn bb-btn-primary w-100 py-3 mb-2" style="font-size: 1.1rem;">
+                            <i class="bi bi-send-fill me-2 mt-1"></i> Confirm & Submit internal Application
+                        </button>
+                    </form>
+                    <p class="text-center text-muted small mx-auto" style="max-width: 500px;">
+                        This records your application on Smart Beneficiary Mapping System for tracking. You still must manually apply on the official government portal below.
+                    </p>
+                {% endif %}
+
+                <!-- Official portal link always available -->
+                {% if apply_url %}
+                <div class="bg-light p-4 rounded-4 mt-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 border">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Ready to apply on the government portal?</h6>
+                        <p class="text-muted small mb-0">Opens in a new tab. Keep this page open for your details.</p>
+                    </div>
+                    <a href="{{ apply_url }}" target="_blank" rel="noopener" class="btn btn-outline-dark fw-bold rounded-pill px-4 text-nowrap shadow-sm">
+                        Official Portal <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Document Checklist Modal -->
+<div class="modal fade" id="checklistModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-0 p-4" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+                <div>
+                    <h5 class="modal-title fw-bold text-white mb-0"><i class="bi bi-list-check me-2"></i>AI Document Checklist</h5>
+                    <p class="text-white-50 small mb-0">Personalised for {{ user.name }} · {{ scheme.scheme_name|truncatechars:40 }}</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="checklistBody">
+                <!-- Content injected by JS -->
+                <div class="text-center py-5" id="checklistLoader">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted fw-semibold">✨ SBMS Assistant is generating your personalised checklist…</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
+                <button class="btn btn-outline-secondary rounded-pill" onclick="printChecklist()"><i class="bi bi-printer me-1"></i>Print</button>
+                <button class="btn btn-outline-primary rounded-pill" onclick="copyChecklist()"><i class="bi bi-clipboard me-1"></i>Copy List</button>
+                <button type="button" class="btn btn-primary rounded-pill ms-auto" data-bs-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyAllDetails() {
+    const details = `Name: {{ user.name }}
+Date of Birth: {{ user.dob|date:"d/m/Y" }}
+Gender: {{ user.gender|default:"—" }}
+Email: {{ user.email|default:"—" }}
+Phone: {{ user.phone|default:"—" }}
+Aadhaar No: {{ user.aadhaar_no }}
+Address: {{ user.address|default:"—" }}
+Annual Income: {% if user.income %}₹{{ user.income|floatformat:0 }}{% else %}—{% endif %}
+Occupation: {{ user.occupation|default:"—" }}
+Education: {{ user.education|default:"—" }}`;
+
+    navigator.clipboard.writeText(details).then(function() {
+        var btn = document.getElementById('copyAllBtn');
+        btn.classList.remove('bb-btn-secondary');
+        btn.classList.add('bb-btn-success', 'text-white');
+        btn.innerHTML = '<i class="bi bi-check2-circle mt-1"></i> Copied to Clipboard!';
+        setTimeout(function() {
+            btn.classList.add('bb-btn-secondary');
+            btn.classList.remove('bb-btn-success', 'text-white');
+            btn.innerHTML = '<i class="bi bi-clipboard mt-1"></i> Copy All Details';
+        }, 3000);
+    }).catch(function() {
+        alert('Copy failed. Please manually select and copy your details from the screen.');
+    });
+}
+
+// ── Document Checklist ──────────────────────────────────────────────────
+let _checklistData = [];
+
+async function loadChecklist(schemeId) {
+    const modal = new bootstrap.Modal(document.getElementById('checklistModal'));
+    const body  = document.getElementById('checklistBody');
+    const loader = document.getElementById('checklistLoader');
+
+    // Reset to loader state
+    body.innerHTML = `<div class="text-center py-5" id="checklistLoader">
+        <div class="spinner-border text-primary mb-3" role="status"></div>
+        <p class="text-muted fw-semibold">✨ SBMS Assistant is generating your personalised checklist…</p>
+    </div>`;
+    modal.show();
+
+    try {
+        const res  = await fetch(`/scheme/${schemeId}/documents/`);
+        const data = await res.json();
+        _checklistData = data.checklist || [];
+        const isGemini = data.source === 'gemini';
+
+        const mandatory = _checklistData.filter(d => d.mandatory);
+        const optional  = _checklistData.filter(d => !d.mandatory);
+
+        const renderGroup = (items, label, color, icon) => {
+            if (!items.length) return '';
+            const rows = items.map(d => `
+                <div class="d-flex align-items-start gap-3 p-3 rounded-3 mb-2" style="background:#ffffff;border:1.5px solid #e2e8f0;">
+                    <div style="width:40px;height:40px;border-radius:10px;background:${color}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi ${icon}" style="color:${color};font-size:1.1rem;"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.95rem;font-weight:700;color:#0f172a;margin-bottom:3px;">${d.document}</div>
+                        <div style="font-size:0.82rem;color:#475569;line-height:1.4;">${d.purpose}</div>
+                    </div>
+                    <span style="font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:20px;background:${color};color:#fff;white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px;">${label}</span>
+                </div>`).join('');
+            return `<h6 style="font-size:0.72rem;font-weight:800;letter-spacing:0.08em;color:${color};text-transform:uppercase;margin:16px 0 8px;">${label} Documents</h6>${rows}`;
+        };
+
+        body.innerHTML = `
+            ${isGemini ? '<div class="d-flex align-items-center gap-2 mb-3"><span style="background:#4f46e5;color:#fff;font-size:0.72rem;font-weight:700;padding:4px 12px;border-radius:20px;">✨ SBMS Assistant</span><span style="color:#475569;font-size:0.83rem;">Personalised checklist for your profile</span></div>' : '<div style="color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:0.82rem;margin-bottom:12px;">⚠️ Generic checklist shown (AI unavailable). Documents may vary by scheme.</div>'}
+            ${renderGroup(mandatory, 'MANDATORY', '#4f46e5', 'bi-file-earmark-check-fill')}
+            ${renderGroup(optional,  'OPTIONAL',  '#0891b2', 'bi-file-earmark-plus')}
+        `;
+    } catch(e) {
+        document.getElementById('checklistBody') && (document.getElementById('checklistBody').innerHTML =
+            '<div class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle fs-2 mb-2 d-block"></i>Failed to load checklist. Please try again.</div>');
+    }
+}
+
+function copyChecklist() {
+    const lines = _checklistData.map(d =>
+        `${d.mandatory ? '[MANDATORY]' : '[OPTIONAL]'} ${d.document} — ${d.purpose}`
+    ).join('\n');
+    navigator.clipboard.writeText(`Document Checklist for {{ scheme.scheme_name }}\n${'='.repeat(50)}\n${lines}`);
+}
+
+function printChecklist() {
+    const content = document.getElementById('checklistBody').innerHTML;
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><title>Document Checklist — {{ scheme.scheme_name }}</title>
+        <style>body{font-family:sans-serif;padding:24px;} .text-muted{color:#64748b;} .fw-bold{font-weight:700;}</style>
+        </head><body><h2>Document Checklist</h2><h3>{{ scheme.scheme_name }}</h3><h4>Applicant: {{ user.name }}</h4>${content}</body></html>`);
+    w.document.close();
+    w.print();
+}
+</script>
+{% endblock %}

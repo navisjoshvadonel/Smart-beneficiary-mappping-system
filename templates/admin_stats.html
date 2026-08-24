@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Stats — Smart Beneficiary Mapping System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard' %}" class="btn btn-link text-decoration-none p-0 mb-3 text-muted fw-semibold" style="font-size: 0.85rem;">
+        <i class="bi bi-arrow-left me-1"></i> Dashboard
+    </a>
+    <h1 class="h3 fw-bold mb-1 text-dark">
+        <i class="bi bi-bar-chart-fill text-primary me-2"></i>Governance Intelligence
+    </h1>
+    <p class="text-muted d-flex align-items-center gap-2 mb-0">
+        <span class="d-flex" style="width: 8px; height: 8px; background-color: var(--bs-success); border-radius: 50%; box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.2); animation: pulse 2s infinite;"></span>
+        Real-time monitoring — Admin Only
+    </p>
+</div>
+
+<!-- Grievance Alert -->
+{% if open_grievances > 0 %}
+<div class="bb-card bg-warning bg-opacity-10 border-warning border-opacity-50 d-flex gap-3 align-items-center mb-4 p-3 ps-4">
+    <i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>
+    <div class="flex-grow-1">
+        <strong class="text-dark">{{ open_grievances }} Open Grievance{{ open_grievances|pluralize }}</strong> pending resolution.
+    </div>
+    <a href="{% url 'admin_grievances' %}" class="btn btn-warning btn-sm fw-bold text-dark px-3 rounded-pill shadow-sm">
+        Manage <i class="bi bi-arrow-right ms-1"></i>
+    </a>
+</div>
+{% endif %}
+
+<!-- Eligibility Rate Hero -->
+<div class="bb-card bg-primary text-white border-0 shadow-sm mb-4 position-relative overflow-hidden p-0">
+    <!-- Background styling -->
+    <div class="position-absolute top-0 end-0 h-100 w-50" style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1)); pointer-events: none;"></div>
+    
+    <div class="p-4 p-md-5 d-flex flex-wrap align-items-center gap-4 gap-md-5 position-relative" style="z-index: 1;">
+        <div>
+            <div class="display-3 fw-bold mb-1" style="font-family: 'Inter', sans-serif;">{{ eligibility_rate }}<span class="fs-2 text-white-50">%</span></div>
+            <div class="fw-semibold text-white-50 text-uppercase mb-1" style="font-size: 0.85rem; letter-spacing: 0.05em;">Overall Eligibility Rate</div>
+            <div class="small text-white-50">{{ total_eligible }} eligible out of {{ total_checks }} checks run</div>
+        </div>
+        
+        <div class="flex-grow-1 d-none d-md-block" style="min-width: 250px;">
+            <div class="d-flex justify-content-between mb-2 small fw-semibold text-white-50">
+                <span>Eligible</span>
+                <span>Not Eligible</span>
+            </div>
+            <div class="progress" style="height: 12px; background-color: rgba(255,255,255,0.2); border-radius: var(--radius-pill);">
+                <div class="progress-bar bg-white" role="progressbar" style="width: {{ eligibility_rate }}%; transition: width 1.5s ease-in-out;" aria-valuenow="{{ eligibility_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="bb-card p-3 p-xl-4 h-100 border-top border-4 border-success">
+            <h3 class="fw-bold mb-1 text-dark">{{ total_users }}</h3>
+            <p class="text-muted small fw-semibold text-uppercase mb-2">Registered Citizens</p>
+            <i class="bi bi-people text-success fs-4 opacity-50 position-absolute bottom-0 end-0 me-3 mb-2"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="bb-card p-3 p-xl-4 h-100 border-top border-4 border-primary">
+            <h3 class="fw-bold mb-1 text-dark">{{ total_apps }}</h3>
+            <p class="text-muted small fw-semibold text-uppercase mb-2">Total Applications</p>
+            <i class="bi bi-file-earmark-text text-primary fs-4 opacity-50 position-absolute bottom-0 end-0 me-3 mb-2"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="bb-card p-3 p-xl-4 h-100 border-top border-4 border-warning">
+            <h3 class="fw-bold mb-1 text-dark">{{ open_grievances }}</h3>
+            <p class="text-muted small fw-semibold text-uppercase mb-2">Open Grievances</p>
+            <i class="bi bi-exclamation-triangle text-warning fs-4 opacity-50 position-absolute bottom-0 end-0 me-3 mb-2"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="bb-card p-3 p-xl-4 h-100 border-top border-4 border-info">
+            <h3 class="fw-bold mb-1 text-dark">{{ total_grievances }}</h3>
+            <p class="text-muted small fw-semibold text-uppercase mb-2">Total Grievances</p>
+            <i class="bi bi-chat-left-dots text-info fs-4 opacity-50 position-absolute bottom-0 end-0 me-3 mb-2"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="bb-card p-3 p-xl-4 h-100 border-top border-4 border-secondary">
+            <h3 class="fw-bold mb-1 text-dark">{{ total_schemes }}</h3>
+            <p class="text-muted small fw-semibold text-uppercase mb-2">Total Schemes</p>
+            <i class="bi bi-ui-checks text-secondary fs-4 opacity-50 position-absolute bottom-0 end-0 me-3 mb-2"></i>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="bb-card p-3 p-xl-4 h-100 border-top border-4 border-primary">
+            <h3 class="fw-bold mb-1 text-dark">{{ total_categories }}</h3>
+            <p class="text-muted small fw-semibold text-uppercase mb-2">Categories</p>
+            <i class="bi bi-tags text-primary fs-4 opacity-50 position-absolute bottom-0 end-0 me-3 mb-2"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="bb-card h-100 p-4 border-0 shadow-sm d-flex flex-col">
+            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.05em;"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Schemes by Category</h6>
+            <div class="flex-grow-1 position-relative" style="min-height: 250px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="bb-card h-100 p-4 border-0 shadow-sm d-flex flex-column">
+            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.05em;"><i class="bi bi-pie-chart-fill text-accent me-2"></i>Eligible vs Not Eligible</h6>
+            <div class="flex-grow-1 position-relative d-flex align-items-center justify-content-center" style="min-height: 250px;">
+                <canvas id="eligChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Tables -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="bb-card p-0 shadow-sm h-100 overflow-hidden">
+            <div class="bg-light p-3 border-bottom d-flex align-items-center">
+                <i class="bi bi-file-earmark-check-fill text-muted me-2"></i>
+                <h6 class="fw-bold text-uppercase text-muted m-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">Applications by Status</h6>
+            </div>
+            <table class="table bb-table table-hover align-middle m-0">
+                <tbody>
+                    {% for row in apps_by_status %}
+                    <tr>
+                        <td class="px-3 py-3">
+                            {% if row.status == 'Approved' %}<span class="bb-badge bb-badge-success">{{ row.status }}</span>
+                            {% elif row.status == 'Rejected' %}<span class="bb-badge bb-badge-danger">{{ row.status }}</span>
+                            {% else %}<span class="bb-badge bb-badge-warning">{{ row.status }}</span>{% endif %}
+                        </td>
+                        <td class="px-3 py-3 text-end fw-bold text-dark">{{ row.count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="text-center p-4 text-muted small">No applications yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="bb-card p-0 shadow-sm h-100 overflow-hidden">
+            <div class="bg-light p-3 border-bottom d-flex align-items-center">
+                <i class="bi bi-trophy-fill text-warning me-2"></i>
+                <h6 class="fw-bold text-uppercase text-muted m-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">Top Applied Schemes</h6>
+            </div>
+            <table class="table bb-table table-hover align-middle m-0">
+                <tbody>
+                    {% for s in top_schemes %}
+                    <tr>
+                        <td class="px-3 py-3">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-light text-muted fw-bold rounded-circle me-3" style="width: 28px; height: 28px; font-size: 0.75rem;">{{ forloop.counter }}</span>
+                            <span class="fw-semibold text-dark">{{ s.scheme__scheme_name|truncatechars:40 }}</span>
+                        </td>
+                        <td class="px-3 py-3 text-end fw-bold text-primary">{{ s.count }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="text-center p-4 text-muted small">No applications yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Users -->
+<div class="bb-card p-0 overflow-hidden shadow-sm mb-5">
+    <div class="bg-light p-3 border-bottom d-flex align-items-center">
+        <i class="bi bi-people-fill text-muted me-2"></i>
+        <h6 class="fw-bold text-uppercase text-muted m-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">Recent Registrations</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table bb-table table-hover align-middle m-0">
+            <thead class="bg-transparent border-bottom">
+                <tr>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase border-0">Name</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase border-0">Email</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase border-0">Gender</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase border-0">Occupation</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase border-0 text-end">Registered</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in recent_users %}
+                <tr>
+                    <td class="px-4 py-3 fw-bold text-dark">{{ u.name }}</td>
+                    <td class="px-4 py-3 text-muted small">{{ u.email }}</td>
+                    <td class="px-4 py-3">
+                        <span class="bb-tag">{{ u.gender|default:"—" }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-muted small">{{ u.occupation|default:"—" }}</td>
+                    <td class="px-4 py-3 text-muted small text-end text-nowrap">{{ u.created_at|date:"d M Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center p-5 text-muted">No users registered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(25, 135, 84, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Shared chart config
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748b'; // slate-500
+        
+        // Category Chart
+        const catCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for c in schemes_by_category %}"{{ c.target_category__category_name|truncatechars:18 }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Schemes',
+                    data: [{% for c in schemes_by_category %}{{ c.count }}{% if not forloop.last %}, {% endif %} {% endfor %}],
+                    backgroundColor: 'rgba(30, 58, 138, 0.8)', // Primary
+                    borderColor: '#1E3A8A',
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { borderDash: [4, 4], color: 'rgba(0,0,0,0.05)' }, beginAtZero: true }
+                }
+            }
+        });
+
+        // Eligibility Chart
+        const eligCtx = document.getElementById('eligChart').getContext('2d');
+        new Chart(eligCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Eligible', 'Not Eligible'],
+                datasets: [{
+                    data: [{{ total_eligible }}, {{ total_checks }} - {{ total_eligible }}],
+                    backgroundColor: ['#0D9488', '#E2E8F0'], // Accent (Teal) and Slate-200
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+                cutout: '70%',
+                layout: { padding: 10 }
+            }
+        });
+    });
+</script>
+{% endblock %}

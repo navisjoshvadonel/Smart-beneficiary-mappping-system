@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Scheme Finder — Smart Beneficiary Mapping System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <!-- Hero Search -->
+    <div class="col-12 col-xl-10">
+        <div class="bb-card bg-primary bg-opacity-10 border-primary border-opacity-25 p-4 p-md-5 mb-5 text-center position-relative overflow-hidden" style="border-radius: var(--radius-lg);">
+            <!-- Decorative background blob -->
+            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at top right, rgba(30,58,138,0.1), transparent 50%); z-index: 0; pointer-events: none;"></div>
+            
+            <div class="position-relative" style="z-index: 1;">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle mb-3 shadow-sm" style="width: 60px; height: 60px;">
+                    <i class="bi bi-robot fs-2"></i>
+                </div>
+                <h1 class="h2 fw-bold text-dark mb-2">AI Scheme Finder</h1>
+                <p class="text-muted mb-4 mx-auto" style="max-width: 600px;">Describe your situation in plain language. We'll leverage Natural Language Processing to instantly match you with relevant government schemes.</p>
+                
+                <form method="POST" action="{% url 'nlp_scheme_finder' %}" class="mx-auto position-relative" style="max-width: 700px;" id="aiSearchForm">
+                    {% csrf_token %}
+                    <div class="bg-white p-2 rounded-pill shadow-sm d-flex align-items-center border border-primary border-opacity-25 transition-smooth">
+                        <i class="bi bi-search text-muted ms-3 me-2"></i>
+                        <input type="text" name="query" class="form-control border-0 shadow-none bg-transparent" placeholder="e.g. I am a farmer with 2 acres of land looking for crop insurance..." value="{{ query }}" required style="font-size: 1rem; height: 48px;" aria-label="AI Search input">
+                        <button type="submit" class="bb-btn bb-btn-primary ms-2 rounded-pill px-4" style="min-width: 120px;">
+                            <i class="bi bi-magic me-1"></i> Find
+                        </button>
+                    </div>
+                </form>
+
+                <div class="d-flex flex-wrap gap-2 justify-content-center mt-4 mx-auto" style="max-width: 800px;">
+                    <span class="bb-tag border-primary border-opacity-25 bg-white text-primary fw-semibold cursor-pointer toggle-query" style="cursor: pointer; transition: all 0.2s;">🌾 Farmer crop support</span>
+                    <span class="bb-tag border-primary border-opacity-25 bg-white text-primary fw-semibold cursor-pointer toggle-query" style="cursor: pointer; transition: all 0.2s;">👩‍💼 Woman business loan</span>
+                    <span class="bb-tag border-primary border-opacity-25 bg-white text-primary fw-semibold cursor-pointer toggle-query" style="cursor: pointer; transition: all 0.2s;">🎓 Student scholarship</span>
+                    <span class="bb-tag border-primary border-opacity-25 bg-white text-primary fw-semibold cursor-pointer toggle-query" style="cursor: pointer; transition: all 0.2s;">👴 Senior citizen pension</span>
+                    <span class="bb-tag border-primary border-opacity-25 bg-white text-primary fw-semibold cursor-pointer toggle-query" style="cursor: pointer; transition: all 0.2s;">🏠 Housing for low income</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <!-- Results Section -->
+        {% if query %}
+            {% if intent %}
+            <!-- Gemini NLP Analysis Panel -->
+            <div class="bb-card p-4 mb-4 border-2" style="border-color: rgba(79,70,229,0.2); background: linear-gradient(135deg, #f8f7ff, #f0f4ff);">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="background:#4f46e5;color:white;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.05em;">
+                            ✨ GEMINI ANALYSIS
+                        </span>
+                        <h6 class="fw-bold mb-0 text-dark">{{ intent }}</h6>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small fw-semibold">Confidence</span>
+                        <div style="width:120px;height:8px;background:#e2e8f0;border-radius:8px;overflow:hidden;">
+                            {% widthratio confidence 1 100 as pct %}
+                            <div style="width:{{ pct }}%;height:100%;background:linear-gradient(90deg,#4f46e5,#818cf8);border-radius:8px;"></div>
+                        </div>
+                        <span class="fw-bold small text-primary">{{ pct }}%</span>
+                    </div>
+                </div>
+                {% if ai_summary %}
+                <p class="text-muted small mb-3 fst-italic">"{{ ai_summary }}"</p>
+                {% endif %}
+                {% if keywords %}
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="text-muted small fw-semibold me-1">Keywords:</span>
+                    {% for kw in keywords %}
+                    <span style="background:#ede9fe;color:#5b21b6;font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid #ddd6fe;">{{ kw }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                <h5 class="fw-bold m-0 text-dark">Results for "<span class="text-primary">{{ query|truncatechars:40 }}</span>"</h5>
+                <span class="bb-badge bb-badge-primary">{{ results|length }} scheme{{ results|length|pluralize }} found</span>
+            </div>
+
+            {% if results %}
+                <div class="row g-4">
+                    {% for item in results %}
+                    <div class="col-md-6 col-lg-4 d-flex">
+                        <div class="bb-card bb-scheme-card bb-hover-lift position-relative p-4 w-100 border-2" style="border-color: rgba(30, 58, 138, 0.1);">
+                            <!-- Match Badge inside card -->
+                            <span class="bb-match-badge {% if item.score >= 80 %}bg-success text-white border-success{% elif item.score >= 60 %}bg-warning text-dark border-warning{% else %}bg-secondary text-white border-secondary{% endif %}" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                {{ item.score }}% match
+                            </span>
+
+                            <div class="scheme-title mt-4 text-truncate-2" title="{{ item.scheme.scheme_name }}" style="min-height: 48px;">
+                                {{ item.scheme.scheme_name }}
+                            </div>
+                            
+                            <div class="d-flex gap-2 flex-wrap mb-3 mt-1">
+                                {% if item.scheme.state %}<span class="bb-tag small py-1"><i class="bi bi-geo-alt-fill text-muted me-1"></i>{{ item.scheme.state }}</span>{% endif %}
+                                {% if item.scheme.benefit_type %}<span class="bb-tag small py-1 text-primary bg-primary bg-opacity-10 border-primary border-opacity-25"><i class="bi bi-tag-fill me-1"></i>{{ item.scheme.benefit_type }}</span>{% endif %}
+                            </div>
+                            
+                            <p class="scheme-desc text-muted small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 60px;">
+                                {{ item.scheme.description }}
+                            </p>
+                            
+                            <div class="mt-auto pt-3 border-top">
+                                <a href="{% url 'scheme_apply_guide' item.scheme.scheme_id %}" class="btn btn-outline-primary w-100 fw-bold rounded-pill text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">
+                                    View Details <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center p-5 bg-white border rounded-4 border-dashed mt-4">
+                    <div class="display-3 text-muted mb-3"><i class="bi bi-search"></i></div>
+                    <h5 class="fw-bold text-dark">No matching schemes found</h5>
+                    <p class="text-muted mb-0">Try using different keywords or simpler descriptions.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center p-5 bg-white border rounded-4 border-dashed mt-4">
+                <div class="display-3 text-primary opacity-50 mb-3"><i class="bi bi-chat-dots-fill"></i></div>
+                <h5 class="fw-bold text-dark">AI is ready to assist you</h5>
+                <p class="text-muted mb-0">Type your situation above to let our NLP engine find your matches instantly.</p>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+    .toggle-query:hover { background-color: var(--primary) !important; color: white !important; }
+    .border-dashed { border-style: dashed !important; border-width: 2px !important; border-color: var(--border) !important; }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.toggle-query').forEach(tag => {
+        tag.addEventListener('click', function() {
+            // Remove emoji prefix and set in input
+            const text = this.textContent.replace(/^[\p{Emoji}\s]+/u, '').trim();
+            const input = document.querySelector('input[name="query"]');
+            input.value = text;
+            input.focus();
+            
+            // Optional: Auto-submit form on click for magical feel
+            // document.getElementById('aiSearchForm').submit();
+        });
+    });
+});
+</script>
+{% endblock %}

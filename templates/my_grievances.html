@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Grievances — Smart Beneficiary Mapping System{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <a href="{% url 'dashboard' %}" class="btn btn-link text-decoration-none p-0 mb-2 text-muted fw-semibold" style="font-size: 0.85rem;">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+        <h1 class="h3 fw-bold mb-1 text-dark">
+            <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>My Grievances
+        </h1>
+        <p class="text-muted mb-0">Track all grievances you've raised and their resolutions</p>
+    </div>
+    
+    <a href="{% url 'submit_grievance' %}" class="bb-btn bb-btn-primary shadow-sm">
+        <i class="bi bi-plus-lg fs-5"></i> New Grievance
+    </a>
+</div>
+
+<div class="bb-card p-0 overflow-hidden mb-5">
+    {% if grievances %}
+    <div class="table-responsive">
+        <table class="table bb-table table-hover align-middle m-0">
+            <thead class="bg-light border-bottom">
+                <tr>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase">GRV ID</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase">Related Scheme</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase" style="min-width: 250px;">Complaint</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase text-nowrap">Status</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase text-nowrap">Raised On</th>
+                    <th scope="col" class="py-3 px-4 text-muted small fw-bold text-uppercase">Admin Remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in grievances %}
+                <tr>
+                    <td class="px-4 py-3">
+                        <span class="font-monospace fw-bold text-accent">GRV-{{ g.grievance_id }}</span>
+                    </td>
+                    <td class="px-4 py-3 fw-semibold text-dark">
+                        {{ g.scheme.scheme_name|truncatechars:35|default:"General Platform Issue" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="text-muted small complaint-wrapper" style="line-height: 1.5;">
+                            {{ g.complaint|truncatechars:80 }}
+                            {% if g.complaint|length > 80 %}
+                            <button class="btn btn-link p-0 text-decoration-none ms-1 toggle-complaint" style="font-size: 0.75rem;" data-full="{{ g.complaint|escapejs }}">Read more</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-nowrap">
+                        {% if g.status == 'Resolved' %}
+                        <span class="bb-badge bb-badge-success"><i class="bi bi-check-circle-fill me-1"></i>Resolved</span>
+                        {% else %}
+                        <span class="bb-badge bb-badge-warning"><i class="bi bi-hourglass-split me-1"></i>Open</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-nowrap text-muted small">
+                        {{ g.raised_on|date:"d M Y" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if g.status == 'Resolved' %}
+                        <div class="text-success small fw-medium pb-1 border-bottom border-success border-opacity-25 border-1 d-inline-block">
+                            <i class="bi bi-chat-left-text me-1"></i> {{ g.admin_remark|default:"Resolved to satisfaction." }}
+                        </div>
+                        <div class="text-muted mt-1" style="font-size: 0.7rem;">Resolved: {{ g.resolved_on|date:"d M Y" }}</div>
+                        {% else %}
+                        <span class="text-muted small border-bottom border-secondary border-opacity-25 border-1 d-inline-block pb-1">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center p-5">
+        <div class="display-3 text-muted mb-3"><i class="bi bi-emoji-smile"></i></div>
+        <h5 class="fw-bold text-dark">No grievances raised</h5>
+        <p class="text-muted mb-4">You haven't reported any issues with your applications or schemes.</p>
+        <a href="{% url 'submit_grievance' %}" class="bb-btn bb-btn-primary px-4">Submit a Grievance</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.toggle-complaint').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parent = this.parentElement;
+            const fullText = this.getAttribute('data-full');
+            
+            if (this.textContent === 'Read more') {
+                parent.innerHTML = fullText + ' <button class="btn btn-link p-0 text-decoration-none ms-1 toggle-complaint fw-bold text-primary" style="font-size: 0.75rem;">Show less</button>';
+            }
+        });
+    });
+    
+    // Delegate event listener for dynamically recreated 'Show less' buttons
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('toggle-complaint') && e.target.textContent === 'Show less') {
+            e.preventDefault();
+            const parent = e.target.parentElement;
+            const fullText = parent.textContent.replace(' Show less', '');
+            
+            const truncated = fullText.substring(0, 80) + '...';
+            // Revert back
+            parent.innerHTML = truncated + ' <button class="btn btn-link p-0 text-decoration-none ms-1 toggle-complaint text-primary" style="font-size: 0.75rem;" data-full="' + fullText.replace(/"/g, '&quot;') + '">Read more</button>';
+        }
+    });
+});
+</script>
+{% endblock %}

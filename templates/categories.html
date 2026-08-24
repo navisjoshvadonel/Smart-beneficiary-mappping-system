@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Search Categories — Smart Beneficiary Mapping System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <a href="{% url 'dashboard' %}" class="btn btn-link text-decoration-none p-0 mb-2 text-muted fw-semibold" style="font-size: 0.85rem;">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+        <h1 class="h3 fw-bold mb-1 text-dark">Select Your Categories</h1>
+        <p class="text-muted mb-0">Choose the beneficiary categories that apply to you. We'll match you with eligible schemes instantly.</p>
+    </div>
+    
+    <div class="bb-card py-2 px-4 shadow-sm fw-bold border-primary bg-primary text-white d-flex align-items-center gap-2" style="border-radius: var(--radius-pill);">
+        <span id="selected-count" class="fs-4">0</span>
+        <span class="text-white text-opacity-75 small">Selected</span>
+    </div>
+</div>
+
+<form method="post" id="categoryForm">
+    {% csrf_token %}
+    <div class="row g-3 mb-4" id="categoriesGrid">
+        {% for field in form.categories %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="position-relative">
+                {{ field.tag }}
+                <label for="{{ field.id_for_label }}" class="bb-card w-100 d-flex align-items-center gap-2 p-3 cursor-pointer category-label transition-smooth border-2" style="cursor: pointer; user-select: none;">
+                    <div class="category-checkbox text-muted d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 4px; transition: all 0.2s;"></div>
+                    <span class="fw-semibold text-dark">{{ field.choice_label }}</span>
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="bb-card bg-light border-0 d-flex flex-wrap align-items-center justify-content-between gap-3 p-4">
+        <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i> Select at least one category to continue.</p>
+        <button type="submit" class="bb-btn bb-btn-primary px-5 py-2" id="submitBtn" disabled>
+            Check My Eligibility <i class="bi bi-arrow-right-short fs-5 ms-1"></i>
+        </button>
+    </div>
+</form>
+
+<style>
+    /* Premium Checkbox Toggle Styles */
+    #categoriesGrid input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    #categoriesGrid .category-label:hover {
+        border-color: var(--primary-light);
+        background-color: var(--canvas);
+        transform: translateY(-2px);
+    }
+
+    #categoriesGrid input[type="checkbox"]:checked + label {
+        border-color: var(--primary);
+        background-color: var(--primary-light);
+    }
+    
+    #categoriesGrid input[type="checkbox"]:checked + label .category-checkbox {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+    
+    #categoriesGrid input[type="checkbox"]:checked + label .category-checkbox::after {
+        content: '\F26B'; /* bootstrap icon check */
+        font-family: mbx-bootstrap-icons, bootstrap-icons;
+        font-size: 14px;
+        font-weight: 900;
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkboxes = document.querySelectorAll('#categoriesGrid input[type="checkbox"]');
+        const countEl = document.getElementById('selected-count');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function updateCount() {
+            const count = [...checkboxes].filter(cb => cb.checked).length;
+            countEl.textContent = count;
+            submitBtn.disabled = count === 0;
+        }
+
+        checkboxes.forEach(cb => {
+            // Add bootstrap form-check-input class dynamically if needed, though hidden
+            cb.classList.add('visually-hidden');
+            cb.addEventListener('change', updateCount);
+        });
+        updateCount();
+    });
+</script>
+{% endblock %}
