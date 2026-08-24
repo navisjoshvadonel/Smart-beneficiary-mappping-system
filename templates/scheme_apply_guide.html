@@ -324,7 +324,12 @@ async function loadChecklist(schemeId) {
     modal.show();
 
     try {
-        const res  = await fetch(`/scheme/${schemeId}/documents/`);
+        const res  = await fetch(`/scheme/${schemeId}/documents/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            credentials: 'same-origin',
+        });
+        if (!res.ok) throw new Error('Checklist request failed');
         const data = await res.json();
         _checklistData = data.checklist || [];
         const isGemini = data.source === 'gemini';
@@ -332,6 +337,11 @@ async function loadChecklist(schemeId) {
         const mandatory = _checklistData.filter(d => d.mandatory);
         const optional  = _checklistData.filter(d => !d.mandatory);
 
+        const escapeHtml = value => {
+            const node = document.createElement('span');
+            node.textContent = String(value || '');
+            return node.innerHTML;
+        };
         const renderGroup = (items, label, color, icon) => {
             if (!items.length) return '';
             const rows = items.map(d => `
@@ -340,8 +350,8 @@ async function loadChecklist(schemeId) {
                         <i class="bi ${icon}" style="color:${color};font-size:1.1rem;"></i>
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:0.95rem;font-weight:700;color:#0f172a;margin-bottom:3px;">${d.document}</div>
-                        <div style="font-size:0.82rem;color:#475569;line-height:1.4;">${d.purpose}</div>
+                        <div style="font-size:0.95rem;font-weight:700;color:#0f172a;margin-bottom:3px;">${escapeHtml(d.document)}</div>
+                        <div style="font-size:0.82rem;color:#475569;line-height:1.4;">${escapeHtml(d.purpose)}</div>
                     </div>
                     <span style="font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:20px;background:${color};color:#fff;white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px;">${label}</span>
                 </div>`).join('');

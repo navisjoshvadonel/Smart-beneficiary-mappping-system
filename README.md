@@ -103,6 +103,34 @@ python manage.py runserver
 ```
 Visit `http://127.0.0.1:8000` to see SBMS in action!
 
+### Configuration and verification
+
+Set these environment variables before production deployment (do not commit a `.env` file):
+
+```env
+SECRET_KEY=a-long-random-secret
+DEBUG=False
+GROQ_API_KEY=optional-ai-key
+MYSQL_HOST=optional-production-host
+MYSQL_DATABASE=railway
+MYSQL_USER=...
+MYSQL_PASSWORD=...
+MYSQL_PORT=3306
+RAILWAY_PUBLIC_DOMAIN=your-app.railway.app
+```
+
+SQLite is intended for local development. Its application tables are legacy, externally-managed tables; initialise a new local database with `python create_sqlite.py`, then run `python manage.py migrate`. Load the provided data separately with `python Load.py` if required.
+
+Before deploying, run:
+
+```bash
+python manage.py check
+python manage.py test
+python manage.py collectstatic --noinput
+```
+
+The AI assistant is optional. It uses only `GROQ_API_KEY`, has timeouts and a database-backed fallback; its answers are informational and official scheme pages remain the source of truth.
+
 ---
 
 ## 🏗️ Project Architecture

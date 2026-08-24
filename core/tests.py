@@ -57,6 +57,11 @@ class EligibilityTests(SimpleTestCase):
 
 
 class PermissionAndWorkflowTests(RequestTestCase):
+    def test_document_checklist_requires_post(self):
+        user = SimpleNamespace(is_authenticated=True, id=7)
+        response = views.document_checklist(self.request('get', user=user), 1)
+        self.assertEqual(response.status_code, 405)
+
     def test_admin_users_redirects_anonymous_users(self):
         response = views.admin_users(self.request())
         self.assertEqual(response.status_code, 302)
