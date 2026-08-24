@@ -32,6 +32,10 @@ class CustomUser(models.Model):
     class Meta:
         managed = False
         db_table = 'Users'
+        indexes = [
+            models.Index(fields=['email'], name='users_email_idx'),
+            models.Index(fields=['created_at'], name='users_created_idx'),
+        ]
 
     def __str__(self):
         return self.name
@@ -68,6 +72,11 @@ class Scheme(models.Model):
     class Meta:
         managed = False
         db_table = 'Schemes'
+        indexes = [
+            models.Index(fields=['scheme_name'], name='schemes_name_idx'),
+            models.Index(fields=['state'], name='schemes_state_idx'),
+            models.Index(fields=['target_category'], name='schemes_category_idx'),
+        ]
 
     def __str__(self):
         return self.scheme_name
@@ -152,6 +161,11 @@ class Application(models.Model):
     class Meta:
         managed = False          # table already exists in MySQL (created by schema.py)
         db_table = 'Applications'
+        indexes = [
+            models.Index(fields=['user', 'status'], name='apps_user_status_idx'),
+            models.Index(fields=['scheme', 'status'], name='apps_scheme_status_idx'),
+            models.Index(fields=['applied_on'], name='apps_applied_idx'),
+        ]
 
     def __str__(self):
         return f"BB-{self.app_id} | {self.user.name} → {self.scheme.scheme_name}"
@@ -175,6 +189,10 @@ class Grievance(models.Model):
     class Meta:
         managed = False          # table already exists in MySQL (created by schema.py)
         db_table = 'Grievances'
+        indexes = [
+            models.Index(fields=['user', 'status'], name='grievances_user_status_idx'),
+            models.Index(fields=['status', 'raised_on'], name='grievances_status_date_idx'),
+        ]
 
     def __str__(self):
         return f"GRV-{self.grievance_id} | {self.user.name} ({self.status})"

@@ -12,10 +12,16 @@ from django.conf import settings
 from django import forms
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.paginator import Paginator
 from django.db.models import Q, Count
+from django.utils import timezone
+from django.utils.crypto import constant_time_compare
+import logging
 import json
 import random
 import string
+import time
 from typing import Any
 
 
@@ -26,6 +32,48 @@ from .forms import (
     ForgotPasswordForm, OTPVerifyForm, ResetPasswordForm, ChangePasswordForm,
     GrievanceForm, EditProfileForm,
 )
+
+
+logger = logging.getLogger(__name__)
+AI_MESSAGE_MAX_LENGTH = 2000
+AI_RATE_LIMIT_WINDOW = 60
+AI_RATE_LIMIT_COUNT = 10
+OTP_TTL_SECONDS = 600
+OTP_RESEND_COOLDOWN_SECONDS = 60
+
+
+def _rate_limit_ai(request):
+    now = time.time()
+    timestamps = [
+        timestamp for timestamp in request.session.get('ai_request_times', [])
+        if now - timestamp < AI_RATE_LIMIT_WINDOW
+    ]
+    if len(timestamps) >= AI_RATE_LIMIT_COUNT:
+        request.session['ai_request_times'] = timestamps
+        return False
+    timestamps.append(now)
+    request.session['ai_request_times'] = timestamps
+    if hasattr(request.session, 'modified'):
+        request.session.modified = True
+    return True
+
+
+def _get_message_from_request(request, key='message'):
+    if len(request.body) > 10000:
+        return None, 'Request is too large.'
+    try:
+        body = json.loads(request.body)
+        message = body.get(key, '')
+    except (TypeError, ValueError, json.JSONDecodeError):
+        message = request.POST.get(key, '')
+    if not isinstance(message, str):
+        return None, 'Invalid message.'
+    message = message.strip()
+    if not message:
+        return None, 'Message is required.'
+    if len(message) > AI_MESSAGE_MAX_LENGTH:
+        return None, f'Message must be {AI_MESSAGE_MAX_LENGTH} characters or fewer.'
+    return message, None
 
 
 
@@ -662,8 +710,10 @@ def my_grievances(request):
 def voice_bot_nlp(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Not authenticated'}, status=403)
+    if not _rate_limit_ai(request):
+        return JsonResponse({'error': 'Too many requests. Please wait a minute.'}, status=429)
     if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
+            return JsonResponse({'error': 'POST required'}, status=405)
 
     custom_user = get_custom_user(request.user)
     if not custom_user:
@@ -740,17 +790,17 @@ def voice_bot_nlp(request):
             else:
                 raise Exception(f"Groq API Error: {resp.text}")
 
-        except Exception as nlp_err:
-            print(f"Gemini NLP error (falling back): {nlp_err}")
+        except Exception:
+            logger.exception('Voice NLP provider failure')
             fallback_map = [
-                ('Agricultural Support',   ['farmer','farming','crop','kisan','agriculture','irrigation'], 0.85),
-                ('Senior Citizen Welfare', ['pension','elderly','senior','retired','aged'],                0.82),
-                ('Educational Support',    ['student','scholarship','college','education','study'],        0.83),
-                ('Women Empowerment',      ['woman','women','female','mahila','widow','maternity'],        0.81),
-                ('Disability & Health',    ['disabled','disability','health','medical','hospital'],        0.80),
-                ('Business & MSME',        ['business','loan','msme','startup','entrepreneur'],            0.79),
-                ('Housing Support',        ['house','housing','shelter','pmay','awas'],                    0.78),
-                ('Unemployment & Labour',  ['unemployed','job','labour','worker','mgnrega','skill'],       0.77),
+                ('Agricultural Support', ['farmer', 'farming', 'crop', 'kisan', 'agriculture', 'irrigation'], 0.85),
+                ('Senior Citizen Welfare', ['pension', 'elderly', 'senior', 'retired', 'aged'], 0.82),
+                ('Educational Support', ['student', 'scholarship', 'college', 'education', 'study'], 0.83),
+                ('Women Empowerment', ['woman', 'women', 'female', 'mahila', 'widow', 'maternity'], 0.81),
+                ('Disability & Health', ['disabled', 'disability', 'health', 'medical', 'hospital'], 0.80),
+                ('Business & MSME', ['business', 'loan', 'msme', 'startup', 'entrepreneur'], 0.79),
+                ('Housing Support', ['house', 'housing', 'shelter', 'pmay', 'awas'], 0.78),
+                ('Unemployment & Labour', ['unemployed', 'job', 'labour', 'worker', 'mgnrega', 'skill'], 0.77),
             ]
             ql = query.lower()
             for intent, kws, conf in fallback_map:
@@ -943,6 +993,7 @@ def nlp_scheme_finder(request):
 
 
 # â”€â”€ Admin Stats Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@staff_member_required(login_url='login')
 def admin_stats(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1011,6 +1062,10 @@ def forgot_password(request):
     form = ForgotPasswordForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         email = form.cleaned_data['email'].lower().strip()
+        last_sent = request.session.get('otp_last_sent_at', 0)
+        if time.time() - last_sent < OTP_RESEND_COOLDOWN_SECONDS:
+            messages.error(request, 'Please wait before requesting another OTP.')
+            return redirect('forgot_password')
         try:
             User.objects.get(email=email)
         except User.DoesNotExist:
@@ -1021,6 +1076,10 @@ def forgot_password(request):
         request.session['otp_code']     = otp
         request.session['otp_email']    = email
         request.session['otp_attempts'] = 0
+        request.session['otp_created_at'] = time.time()
+        request.session['otp_last_sent_at'] = time.time()
+        request.session['otp_verified'] = False
+        logger.info('Password reset OTP issued for %s', email)
 
         try:
             send_mail(
@@ -1056,6 +1115,14 @@ def verify_otp(request):
         entered  = form.cleaned_data['otp'].strip()
         stored   = request.session.get('otp_code', '')
         attempts = request.session.get('otp_attempts', 0)
+        created_at = request.session.get('otp_created_at', 0)
+
+        if time.time() - created_at > OTP_TTL_SECONDS:
+            for key in ['otp_code', 'otp_email', 'otp_attempts', 'otp_created_at', 'otp_verified']:
+                request.session.pop(key, None)
+            logger.info('Expired password reset OTP submitted')
+            messages.error(request, 'This OTP has expired. Request a new one.')
+            return redirect('forgot_password')
 
         if attempts >= 5:
             for key in ['otp_code', 'otp_email', 'otp_attempts']:
@@ -1063,9 +1130,11 @@ def verify_otp(request):
             messages.error(request, 'Too many wrong attempts. Request a new OTP.')
             return redirect('forgot_password')
 
-        if entered == stored:
+        if constant_time_compare(entered, stored):
             request.session['otp_verified'] = True
             request.session.pop('otp_code', None)
+            request.session.pop('otp_created_at', None)
+            logger.info('Password reset OTP verified for %s', request.session.get('otp_email'))
             return redirect('reset_password')
         else:
             request.session['otp_attempts'] = attempts + 1
@@ -1170,6 +1239,7 @@ def withdraw_application(request, app_id):
 
 
 # â”€â”€ Admin: List All Grievances â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@staff_member_required(login_url='login')
 def admin_grievances(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1187,8 +1257,10 @@ def admin_grievances(request):
         open_count     = Grievance.objects.filter(status='Open').count()
         resolved_count = Grievance.objects.filter(status='Resolved').count()
 
+        page_obj = Paginator(grievances_qs, 25).get_page(request.GET.get('page'))
         return render(request, 'admin_grievances.html', {
-            'grievances':    grievances_qs,
+            'grievances':    page_obj,
+            'page_obj':      page_obj,
             'status_filter': status_filter,
             'open_count':    open_count,
             'resolved_count': resolved_count,
@@ -1199,6 +1271,7 @@ def admin_grievances(request):
 
 
 # â”€â”€ Admin: Resolve a Grievance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+@staff_member_required(login_url='login')
 def resolve_grievance(request, grv_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1272,14 +1345,11 @@ def gemini_chat(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Unauthorized'}, status=401)
 
-    try:
-        body = json.loads(request.body)
-        user_msg = body.get('message', '').strip()
-    except Exception:
-        user_msg = request.POST.get('message', '').strip()
-
-    if not user_msg:
-        return JsonResponse({'error': 'Empty message'}, status=400)
+    if not _rate_limit_ai(request):
+        return JsonResponse({'error': 'Too many requests. Please wait a minute.'}, status=429)
+    user_msg, error = _get_message_from_request(request)
+    if error:
+        return JsonResponse({'error': error}, status=400)
 
     try:
         custom_user = get_custom_user(request.user)
@@ -1298,10 +1368,9 @@ def gemini_chat(request):
         reply_text = gemini_bot_service.send_message(request.user.id, user_msg, user_info)
         return JsonResponse({'reply': reply_text})
 
-    except Exception as e:
-        import traceback
-        print(f"[Gemini Chat] {type(e).__name__}: {e}\n{traceback.format_exc()}")
-        return JsonResponse({'reply': f'Error ({type(e).__name__}). Please try again.'})
+    except Exception:
+        logger.exception('Gemini chat provider failure')
+        return JsonResponse({'reply': 'The assistant is temporarily unavailable. Please try again later.'}, status=503)
 
 
 
@@ -1320,9 +1389,8 @@ def clear_chat(request):
 
 
 
+@staff_member_required(login_url='login')
 def admin_users(request):
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return redirect('home')
         
     search_query = request.GET.get('q', '').strip()
     users = CustomUser.objects.all().order_by('-created_at')
@@ -1330,14 +1398,13 @@ def admin_users(request):
     if search_query:
         users = users.filter(Q(name__icontains=search_query) | Q(email__icontains=search_query) | Q(aadhaar_no__icontains=search_query))
         
-    return render(request, 'admin_users.html', {'users': users, 'search_query': search_query})
+    page_obj = Paginator(users, 25).get_page(request.GET.get('page'))
+    return render(request, 'admin_users.html', {'users': page_obj, 'page_obj': page_obj, 'search_query': search_query})
 
 
+@staff_member_required(login_url='login')
 def admin_delete_user(request, user_id):
     """Staff-only: delete a CustomUser + its linked auth.User by email."""
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return redirect('home')
-
     if request.method == 'POST':
         try:
             custom_user = CustomUser.objects.get(user_id=user_id)
@@ -1360,9 +1427,8 @@ def admin_delete_user(request, user_id):
     return redirect('admin_users')
 
 
+@staff_member_required(login_url='login')
 def admin_export_csv(request):
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return redirect('home')
         
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="smart_beneficiary_system_export.csv"'
@@ -1385,6 +1451,7 @@ def admin_export_csv(request):
     return response
 
 
+@staff_member_required(login_url='login')
 def admin_announcements(request):
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('home')
@@ -1440,17 +1507,20 @@ def admin_announcements(request):
         )
 
 
+@staff_member_required(login_url='login')
 def admin_schemes(request):
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('home')
     try:
         schemes = Scheme.objects.all().order_by('scheme_name')
-        return render(request, 'scheme_manager.html', {'schemes': schemes})
+        page_obj = Paginator(schemes, 25).get_page(request.GET.get('page'))
+        return render(request, 'scheme_manager.html', {'schemes': page_obj, 'page_obj': page_obj})
     except Exception as e:
         import traceback
         return HttpResponse(f"<pre>{traceback.format_exc()}</pre>", status=500)
 
 
+@staff_member_required(login_url='login')
 def scheme_create(request):
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('home')
@@ -1465,6 +1535,7 @@ def scheme_create(request):
     return render(request, 'scheme_form.html', {'form': form, 'title': 'Create New Scheme'})
 
 
+@staff_member_required(login_url='login')
 def scheme_edit(request, scheme_id):
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('home')
@@ -1480,6 +1551,7 @@ def scheme_edit(request, scheme_id):
     return render(request, 'scheme_form.html', {'form': form, 'title': 'Edit Scheme'})
 
 
+@staff_member_required(login_url='login')
 def scheme_delete(request, scheme_id):
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('home')
@@ -1497,14 +1569,11 @@ def ai_chat(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Unauthorized'}, status=401)
 
-    try:
-        body = json.loads(request.body)
-        user_msg = body.get('message', '').strip()
-    except Exception:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-
-    if not user_msg:
-        return JsonResponse({'error': 'Empty message'}, status=400)
+    if not _rate_limit_ai(request):
+        return JsonResponse({'error': 'Too many requests. Please wait a minute.'}, status=429)
+    user_msg, error = _get_message_from_request(request)
+    if error:
+        return JsonResponse({'error': error}, status=400)
 
     api_key = getattr(settings, 'GROQ_API_KEY', None)
     if not api_key or str(api_key).startswith('your'):
@@ -1610,10 +1679,9 @@ def ai_chat(request):
 
     except _req.exceptions.Timeout:
         return JsonResponse({'reply': '⏳ Request timed out. Please try again.'})
-    except Exception as e:
-        import traceback
-        print(f"[AI Chat] Exception: {type(e).__name__}: {e}\n{traceback.format_exc()}")
-        return JsonResponse({'reply': f'⚠️ Something went wrong. Please try again.'})
+    except Exception:
+        logger.exception('AI chat provider failure')
+        return JsonResponse({'reply': 'The assistant is temporarily unavailable. Please try again later.'}, status=503)
 
 
 @require_POST
