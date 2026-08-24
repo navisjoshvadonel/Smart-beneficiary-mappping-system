@@ -107,6 +107,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <a href="#main-content" class="visually-hidden-focusable position-absolute top-0 start-0 m-2 p-2 bg-white text-dark rounded shadow" style="z-index:100000;">Skip to main content</a>
 
     <!-- Mobile Top Navbar -->
     <nav class="bb-navbar">
@@ -205,7 +206,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="bb-main-content">
+    <main id="main-content" class="bb-main-content" tabindex="-1">
         <!-- Flash Messages -->
         <div class="container-fluid mb-3">
             {% if messages %}
