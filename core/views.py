@@ -300,7 +300,7 @@ def dashboard(request):
 
     try:
         eligible_qs = UserEligibility.objects.filter(
-            user_id=custom_user.user_id, eligibility_status='Eligible'
+            user_id=custom_user.user_id, eligibility_status='Eligible', scheme__is_active=True
         ).select_related('scheme').order_by('-applied_on')
         if search_q:
             eligible_qs = eligible_qs.filter(
@@ -322,7 +322,7 @@ def dashboard(request):
 
     try:
         # Pull states & types from ALL schemes so the filter is always fully populated
-        all_schemes_qs = Scheme.objects.values_list('state', 'benefit_type')
+        all_schemes_qs = Scheme.objects.filter(is_active=True).values_list('state', 'benefit_type')
         states        = sorted(set(s for s, _ in all_schemes_qs if s and s.strip()))
         benefit_types = sorted(set(t for _, t in all_schemes_qs if t and t.strip()))
     except Exception:
@@ -859,7 +859,7 @@ def voice_bot_nlp(request):
 
     # If fewer than 3 matched eligible, supplement from all schemes
     if len(matched) < 3:
-        all_schemes_qs = Scheme.objects.all()[:100]
+        all_schemes_qs = Scheme.objects.filter(is_active=True)[:100]
         scored_all = sorted(
             [(score_scheme(s), s) for s in all_schemes_qs if s not in matched],
             key=lambda x: x[0], reverse=True
@@ -893,6 +893,9 @@ def nlp_scheme_finder(request):
     confidence  = 0.0
     keywords    = []
     ai_summary  = ''
+    catalog_last_verified = Scheme.objects.filter(
+        is_active=True, last_verified_at__isnull=False
+    ).order_by('-last_verified_at').values_list('last_verified_at', flat=True).first()
 
     if request.method == 'POST':
         query = request.POST.get('query', '').strip()
@@ -984,7 +987,7 @@ def nlp_scheme_finder(request):
                         Q(benefits__icontains=kw)    |
                         Q(benefit_type__icontains=kw)
                     )
-                matched_schemes = Scheme.objects.filter(q_filter).distinct()[:20]
+                matched_schemes = Scheme.objects.filter(is_active=True).filter(q_filter).distinct()[:20]
 
                 # Score results: eligibility match + keyword relevance
                 for scheme in matched_schemes:
@@ -1011,6 +1014,7 @@ def nlp_scheme_finder(request):
         'confidence': confidence,
         'keywords':   keywords,
         'ai_summary': ai_summary,
+        'catalog_last_verified': catalog_last_verified,
     })
 
 

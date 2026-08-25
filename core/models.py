@@ -66,8 +66,13 @@ class Scheme(models.Model):
     registration_link = models.URLField(max_length=500, blank=True, null=True)
     benefit_type = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
-    # is_active removed: column does not exist in Railway MySQL
-    # Will be re-added after DB migration is fixed
+    is_active = models.BooleanField(default=True)
+    source_id = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    source_name = models.CharField(max_length=100, blank=True, null=True)
+    source_url = models.URLField(max_length=500, blank=True, null=True)
+    source_updated_at = models.DateTimeField(blank=True, null=True)
+    last_verified_at = models.DateTimeField(blank=True, null=True)
+    content_hash = models.CharField(max_length=64, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -76,6 +81,7 @@ class Scheme(models.Model):
             models.Index(fields=['scheme_name'], name='schemes_name_idx'),
             models.Index(fields=['state'], name='schemes_state_idx'),
             models.Index(fields=['target_category'], name='schemes_category_idx'),
+            models.Index(fields=['is_active', 'last_verified_at'], name='schemes_fresh_idx'),
         ]
 
     def __str__(self):

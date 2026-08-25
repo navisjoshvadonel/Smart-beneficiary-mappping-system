@@ -43,6 +43,10 @@
 
 <div class="row justify-content-center">
     <div class="col-12 col-xl-10">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 px-1 small text-muted">
+            <span><i class="bi bi-shield-check text-success me-1"></i>Official-source catalogue</span>
+            {% if catalog_last_verified %}<span>Latest verification: {{ catalog_last_verified|date:"d M Y, H:i" }} IST</span>{% else %}<span>Catalogue verification pending</span>{% endif %}
+        </div>
         <!-- Results Section -->
         {% if query %}
             {% if intent %}
@@ -101,6 +105,11 @@
                                 {% if item.scheme.state %}<span class="bb-tag small py-1"><i class="bi bi-geo-alt-fill text-muted me-1"></i>{{ item.scheme.state }}</span>{% endif %}
                                 {% if item.scheme.benefit_type %}<span class="bb-tag small py-1 text-primary bg-primary bg-opacity-10 border-primary border-opacity-25"><i class="bi bi-tag-fill me-1"></i>{{ item.scheme.benefit_type }}</span>{% endif %}
                             </div>
+                            {% if item.scheme.last_verified_at %}
+                            <div class="small text-success mb-2"><i class="bi bi-shield-check me-1"></i>Verified {{ item.scheme.last_verified_at|date:"d M Y" }}{% if item.scheme.source_name %} · {{ item.scheme.source_name }}{% endif %}</div>
+                            {% else %}
+                            <div class="small text-muted mb-2"><i class="bi bi-info-circle me-1"></i>Official link available · verification pending</div>
+                            {% endif %}
                             
                             <p class="scheme-desc text-muted small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 60px;">
                                 {{ item.scheme.description }}

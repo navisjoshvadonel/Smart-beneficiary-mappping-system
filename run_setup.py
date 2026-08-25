@@ -74,6 +74,15 @@ def setup_db():
         _add_column(cursor,
             "ALTER TABLE Schemes ADD COLUMN eligibility_rules JSON",
             "Schemes.eligibility_rules")
+        for col, typedef in [
+            ("source_id", "VARCHAR(255) NULL"),
+            ("source_name", "VARCHAR(100) NULL"),
+            ("source_url", "VARCHAR(500) NULL"),
+            ("source_updated_at", "DATETIME NULL"),
+            ("last_verified_at", "DATETIME NULL"),
+            ("content_hash", "VARCHAR(64) NULL"),
+        ]:
+            _add_column(cursor, f"ALTER TABLE Schemes ADD COLUMN {col} {typedef}", f"Schemes.{col}")
 
         # ── Grievances columns ──────────────────────────────────────────────
         print("\n[Grievances columns]")

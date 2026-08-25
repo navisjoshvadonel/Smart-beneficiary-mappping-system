@@ -16,7 +16,7 @@
                     <th>ID</th>
                     <th>Scheme Name</th>
                     <th>Category</th>
-                    <th>Status</th>
+                    <th>Source & freshness</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -26,6 +26,10 @@
                     <td>#{{ scheme.scheme_id }}</td>
                     <td class="fw-bold">{{ scheme.scheme_name }}</td>
                     <td>{{ scheme.target_category.category_name|default:"General" }}</td>
+                    <td>
+                        {% if not scheme.is_active %}<span class="badge text-bg-secondary">Inactive</span>{% elif scheme.last_verified_at %}<span class="badge text-bg-success">Verified</span><div class="small text-muted mt-1">{{ scheme.last_verified_at|date:"d M Y H:i" }}</div>{% else %}<span class="badge text-bg-warning">Legacy / unverified</span>{% endif %}
+                        {% if scheme.source_name %}<div class="small text-muted mt-1">{{ scheme.source_name }}</div>{% endif %}
+                    </td>
                     <td class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
                             <a href="{% url 'scheme_edit' scheme.scheme_id %}" class="btn btn-sm btn-outline-primary" title="Edit Scheme">

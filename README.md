@@ -121,6 +121,16 @@ RAILWAY_PUBLIC_DOMAIN=your-app.railway.app
 
 SQLite is intended for local development. Its application tables are legacy, externally-managed tables; initialise a new local database with `python create_sqlite.py`, then run `python manage.py migrate`. Load the provided data separately with `python Load.py` if required.
 
+### Live scheme catalogue
+
+The workbook is a seed dataset, not a live source. SBMS now supports guarded synchronisation from approved official JSON or CSV exports. Configure one or more feeds in `SCHEME_FEED_URLS` (comma-separated), then run this command from a daily Railway cron, GitHub Actions job, or server scheduler:
+
+```bash
+python manage.py sync_schemes --source-name "myScheme official export"
+```
+
+The importer records the source URL, source record ID, content hash, last verified time, and source update time. It upserts records, never deletes them, and will not retire existing records when a feed is empty or contains no valid rows. Public search only shows active records. Use an official API/export URL supplied by the relevant department; do not scrape pages that prohibit automated access, and treat each official portal as the source of truth for final eligibility and applications.
+
 Before deploying, run:
 
 ```bash

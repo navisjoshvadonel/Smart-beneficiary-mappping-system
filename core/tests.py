@@ -8,6 +8,7 @@ from django.test import RequestFactory, TestCase, SimpleTestCase
 
 from . import views
 from .forms import LoginForm, UserRegistrationForm
+from .management.commands.sync_schemes import parse_feed
 
 
 class RequestTestCase(SimpleTestCase):
@@ -33,6 +34,19 @@ class AuthenticationTests(SimpleTestCase):
 
     def test_login_form_uses_email_label(self):
         self.assertEqual(LoginForm().fields['username'].label, 'Email')
+
+
+class SchemeFeedTests(SimpleTestCase):
+    def test_json_feed_accepts_common_scheme_envelope(self):
+        records = parse_feed(b'{"schemes": [{"id": "pm-1", "name": "Example", "url": "https://example.gov.in"}]}', 'application/json')
+        self.assertEqual(records[0]['name'], 'Example')
+
+    def test_empty_feed_is_represented_as_empty_records(self):
+        self.assertEqual(parse_feed(b'{"results": []}', 'application/json'), [])
+
+    def test_unsupported_html_feed_is_rejected(self):
+        with self.assertRaises(ValueError):
+            parse_feed(b'<html>schemes</html>', 'text/html')
 
 
 class EligibilityTests(SimpleTestCase):

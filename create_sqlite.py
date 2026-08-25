@@ -55,6 +55,12 @@ queries = [
         official_link   VARCHAR(255),
         registration_link VARCHAR(255),
         is_active       BOOLEAN DEFAULT 1,
+        source_id       VARCHAR(255),
+        source_name     VARCHAR(100),
+        source_url      VARCHAR(500),
+        source_updated_at DATETIME,
+        last_verified_at DATETIME,
+        content_hash    VARCHAR(64),
         created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (target_category) REFERENCES Categories(category_id)
     )
